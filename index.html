@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Research disclosure: AI assistants leak your conversations to third-party trackers including Meta, Google, and others.">
+  <title>LeakyLLM — AI Assistants Are Leaking Your Conversations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="./css/datatables.css" rel="stylesheet">
+  <script src="./js/jquery_3.7.1.min.js"></script>
+  <script src="./js/jquery.dataTables.min.js"></script>
+  <style>
+    /* ─── Variables ─────────────────────────────────────────────── */
+    :root {
+      --brand:      #c02a2a;
+      --brand-light:#f5e6e6;
+      --link:       #3477ad;
+      --text:       #333;
+      --muted:      #828282;
+      --muted-dark: #555;
+      --bg:         #fdfdfd;
+      --surface:    #fafafa;
+      --border:     #e8e8e8;
+      --content-w:  980px;
+      --gap:        30px;
+
+      /* per-tracker accent colors */
+      --meta:    #1877F2;
+      --google:  #EA4335;
+      --firebase:#FBBC05;
+      --yandex:  #FF0000;
+      --purple:  #7c3aed;
+    }
+
+    /* ─── Reset & Base ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; scroll-padding-top: 68px; }
+
+    body {
+      font-family: "Source Sans 3", "Source Sans Pro", Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ul { list-style: none; padding: 0; }
+    p { margin-bottom: 1em; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ─── Layout ────────────────────────────────────────────────── */
+    .container {
+      max-width: calc(var(--content-w) + 2 * var(--gap));
+      margin: 0 auto;
+      padding: 0 var(--gap);
+    }
+
+    section { padding: 3.5rem 0; }
+    section + section { border-top: 1px solid var(--border); }
+
+    /* ─── Nav ───────────────────────────────────────────────────── */
+    .site-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: #fff;
+      border-top: 5px solid var(--brand);
+      border-bottom: 1px solid var(--border);
+      height: 58px;
+    }
+
+    .nav-inner {
+      max-width: calc(var(--content-w) + 2 * var(--gap));
+      margin: 0 auto;
+      padding: 0 var(--gap);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .site-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      margin-right: 2rem;
+      text-decoration: none;
+    }
+    .site-title:hover { text-decoration: none; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.1rem;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+
+    .nav-links a {
+      font-size: 0.83rem;
+      font-weight: 500;
+      color: var(--muted-dark);
+      padding: 0.3rem 0.65rem;
+      border-radius: 3px;
+      white-space: nowrap;
+      opacity: 0.8;
+      transition: opacity 0.2s, color 0.2s;
+    }
+    .nav-links a:hover { opacity: 1; color: var(--brand); text-decoration: none; }
+    .nav-links a.active { opacity: 1; color: var(--brand); border-bottom: 2px solid var(--brand); border-radius: 0; }
+
+    .nav-ext {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nav-ext a {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--brand);
+      padding: 5px 12px;
+      border: 1px solid #e8b0b0;
+      border-radius: 3px;
+      white-space: nowrap;
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-ext a:hover { background: var(--brand); color: #fff; text-decoration: none; }
+
+    /* ─── Hero ──────────────────────────────────────────────────── */
+    .hero {
+      padding-top: calc(58px + 3.5rem);
+      padding-bottom: 3.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--brand);
+      background: var(--brand-light);
+      padding: 4px 10px;
+      border-radius: 3px;
+      margin-bottom: 1.2rem;
+    }
+    .hero-eyebrow .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--brand);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .hero h1 {
+      font-size: 2.6rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #1a1a1a;
+      max-width: 720px;
+      margin-bottom: 1.2rem;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--brand);
+    }
+
+    .hero-lead {
+      font-size: 1.12rem;
+      color: var(--muted-dark);
+      max-width: 640px;
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .btn {
+      display: inline-block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      padding: 8px 20px;
+      border-radius: 3px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      text-decoration: none;
+    }
+    .btn:hover { text-decoration: none; }
+    .btn-primary {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+    .btn-primary:hover { background: #a52020; border-color: #a52020; color: #fff; }
+    .btn-outline {
+      background: transparent;
+      color: var(--brand);
+      border-color: #e8b0b0;
+    }
+    .btn-outline:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .btn-neutral {
+      background: transparent;
+      color: var(--muted-dark);
+      border-color: var(--border);
+    }
+    .btn-neutral:hover { border-color: var(--muted-dark); color: var(--text); }
+
+    /* ─── Hero Stats ────────────────────────────────────────────── */
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      max-width: 760px;
+    }
+
+    .stat-cell {
+      background: #fff;
+      padding: 1.2rem 1.4rem;
+    }
+
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--brand);
+      line-height: 1;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      display: block;
+    }
+
+    /* ─── Section Headings ──────────────────────────────────────── */
+    .section-heading {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 0.5rem;
+      position: relative;
+      display: inline-block;
+    }
+    .section-heading::after {
+      content: '';
+      display: block;
+      width: 2em;
+      height: 2px;
+      background: var(--brand);
+      margin-top: 6px;
+    }
+
+    .section-subtitle {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      max-width: 600px;
+    }
+
+    /* ─── Callout / Alert Banners ───────────────────────────────── */
+    .callout {
+      border-left: 4px solid var(--brand);
+      background: var(--surface);
+      padding: 1rem 1.25rem;
+      border-radius: 0 4px 4px 0;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+    .callout-title {
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
+    .callout.callout-info   { border-color: var(--link); }
+    .callout.callout-warn   { border-color: #d97706; }
+    .callout.callout-success{ border-color: #059669; }
+
+    /* ─── Platform Cards ────────────────────────────────────────── */
+    .platform-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .platform-card {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      padding: 1.2rem 1.4rem;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .platform-card:hover {
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      border-color: #ccc;
+    }
+
+    .platform-name {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .platform-surfaces {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .tracker-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .pill {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .pill-meta     { background: #e7f0fd; color: var(--meta); }
+    .pill-google   { background: #fce8e6; color: var(--google); }
+    .pill-firebase { background: #fef9e7; color: #b45309; }
+    .pill-yandex   { background: #fff0f0; color: var(--yandex); }
+    .pill-unknown  { background: #f0f0f0; color: var(--muted-dark); }
+    .pill-more     { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ─── Leakage Matrix Table ──────────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    table.matrix {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      background: #fff;
+    }
+
+    table.matrix thead th {
+      background: var(--surface);
+      border-bottom: 2px solid var(--border);
+      padding: 0.7rem 0.9rem;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted-dark);
+      white-space: nowrap;
+    }
+
+    table.matrix tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    table.matrix tbody tr:last-child { border-bottom: none; }
+    table.matrix tbody tr:hover { background: #f9f9f9; }
+
+    table.matrix tbody td {
+      padding: 0.65rem 0.9rem;
+      vertical-align: middle;
+      color: var(--text);
+    }
+
+    table.matrix td.platform-col {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* leak indicator icons */
+    .leak-yes   { color: var(--brand); font-weight: 700; font-size: 1rem; }
+    .leak-no    { color: #aaa; }
+    .leak-part  { color: #d97706; font-weight: 700; }
+    .leak-unk   { color: #ccc; }
+
+    /* severity badge */
+    .severity {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .sev-critical { background: #fee2e2; color: #991b1b; }
+    .sev-high     { background: #fef3c7; color: #92400e; }
+    .sev-medium   { background: #e0f2fe; color: #0369a1; }
+    .sev-low      { background: #f0fdf4; color: #166534; }
+
+    /* ─── Condition Matrix ──────────────────────────────────────── */
+    table.conditions thead th:first-child { width: 200px; }
+
+    .cond-yes { text-align: center; color: var(--brand); font-weight: 700; }
+    .cond-no  { text-align: center; color: #ccc; }
+    .cond-partial { text-align: center; color: #d97706; font-weight: 700; }
+
+    /* ─── Timeline ──────────────────────────────────────────────── */
+    .timeline {
+      position: relative;
+      margin-top: 1.5rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 112px;
+      top: 0; bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .tl-item {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.8rem;
+      position: relative;
+    }
+
+    .tl-date {
+      min-width: 112px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      padding-top: 2px;
+      padding-right: 1.2rem;
+      text-align: right;
+    }
+
+    .tl-dot {
+      position: relative;
+      z-index: 1;
+      width: 10px;
+      height: 10px;
+      min-width: 10px;
+      border-radius: 50%;
+      background: var(--brand);
+      margin-top: 6px;
+      margin-right: 1.2rem;
+      margin-left: 0;
+    }
+    .tl-dot.open { background: #fff; border: 2px solid var(--border); }
+
+    .tl-body {
+      flex: 1;
+    }
+    .tl-body strong { display: block; font-size: 0.92rem; margin-bottom: 0.2rem; }
+    .tl-body p { font-size: 0.88rem; color: var(--muted-dark); margin: 0; }
+
+    /* ─── FAQ / Accordion ───────────────────────────────────────── */
+    .faq-list {
+      margin-top: 1.5rem;
+    }
+
+    details.faq {
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 0;
+      margin-bottom: 0.6rem;
+      background: #fff;
+      transition: box-shadow 0.2s;
+    }
+    details.faq[open] {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    details.faq summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+    }
+    details.faq summary::-webkit-details-marker { display: none; }
+    details.faq summary::after {
+      content: '+';
+      font-size: 1.2rem;
+      font-weight: 300;
+      color: var(--muted);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    details.faq[open] summary::after { content: '−'; }
+
+    details.faq .faq-body {
+      padding: 0 1.1rem 1rem;
+      font-size: 0.9rem;
+      color: var(--muted-dark);
+      line-height: 1.7;
+      border-top: 1px solid var(--border);
+    }
+    details.faq .faq-body p { margin-top: 0.75rem; }
+
+    /* ─── Two-column grid ───────────────────────────────────────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem 2.5rem;
+      margin-top: 1.5rem;
+    }
+
+    /* ─── Finding Cards ─────────────────────────────────────────── */
+    .finding-card {
+      border-left: 4px solid var(--brand);
+      background: var(--surface);
+      padding: 1rem 1.2rem;
+      border-radius: 0 5px 5px 0;
+    }
+    .finding-card.blue  { border-color: var(--link); }
+    .finding-card.amber { border-color: #d97706; }
+    .finding-card.green { border-color: #059669; }
+    .finding-card.purple{ border-color: var(--purple); }
+
+    .finding-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted-dark);
+      margin-bottom: 0.4rem;
+    }
+    .finding-card p {
+      font-size: 0.9rem;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ─── Methodology Steps ─────────────────────────────────────── */
+    .method-steps {
+      counter-reset: step;
+      margin-top: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .method-step {
+      counter-increment: step;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.2rem;
+      position: relative;
+    }
+
+    .method-step::before {
+      content: counter(step);
+      display: block;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--brand);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      opacity: 0.5;
+    }
+
+    .method-step h4 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .method-step p {
+      font-size: 0.85rem;
+      color: var(--muted-dark);
+      line-height: 1.55;
+    }
+
+    /* ─── Code / Payload block ──────────────────────────────────── */
+    .payload-block {
+      background: #1e1e2e;
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      margin-top: 1.5rem;
+    }
+    .payload-block code {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.8rem;
+      line-height: 1.8;
+      color: #cdd6f4;
+      display: block;
+      white-space: pre;
+    }
+    .payload-block .key   { color: #89b4fa; }
+    .payload-block .val   { color: #a6e3a1; }
+    .payload-block .redact{ color: #f38ba8; }
+    .payload-block .comment{ color: #6c7086; }
+
+    /* ─── Footer ────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 0;
+      margin-top: 1rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-brand {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--brand);
+      margin-bottom: 0.3rem;
+    }
+
+    .footer-copy {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      font-size: 0.85rem;
+      color: var(--muted-dark);
+    }
+    .footer-links a:hover { color: var(--brand); }
+
+    /* ─── Responsive ────────────────────────────────────────────── */
+    @media (max-width: 800px) {
+      .hero h1 { font-size: 1.9rem; }
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .platform-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col { grid-template-columns: 1fr; gap: 1rem; }
+      .method-steps { grid-template-columns: 1fr 1fr; }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      :root { --gap: 18px; }
+      .hero h1 { font-size: 1.55rem; }
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .platform-grid { grid-template-columns: 1fr; }
+      .method-steps { grid-template-columns: 1fr; }
+      .timeline::before { left: 0; }
+      .tl-date { display: none; }
+      .tl-dot { margin-left: 0; }
+      .footer-inner { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Navigation ─────────────────────────────────────────── -->
+  <nav class="site-nav" id="site-nav">
+    <div class="nav-inner">
+      <a href="#" class="site-title">LeakyLLM</a>
+      <div class="nav-links" id="nav-links">
+        <a href="#findings">Findings</a>
+        <a href="#platforms">Platforms</a>
+        <a href="#leakage-matrix">Leakage Matrix</a>
+        <a href="#methodology">Methodology</a>
+        <a href="#disclosure">Disclosure</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="nav-ext">
+        <a href="#paper">Read Paper</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── Hero ───────────────────────────────────────────────── -->
+  <section class="hero" id="intro">
+    <div class="container">
+      <div class="hero-eyebrow">
+        <span class="dot"></span>
+        Research Disclosure
+      </div>
+      <h1>Your AI Assistant Is <em>Leaking</em> Your Conversations</h1>
+      <p class="hero-lead">
+        We systematically investigated popular AI search assistants and found that conversations — including
+        sensitive health queries — are being transmitted to third-party advertising trackers, even in
+        "private" and incognito modes.
+      </p>
+      <div class="hero-actions">
+        <a href="#leakage-matrix" class="btn btn-primary">See the Evidence</a>
+        <a href="#paper" class="btn btn-outline">Read the Paper</a>
+        <a href="#methodology" class="btn btn-neutral">Methodology</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-cell">
+          <span class="stat-number" data-count="6">6</span>
+          <span class="stat-label">AI Platforms Tested</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-number" data-count="12">12</span>
+          <span class="stat-label">Unique Surfaces</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-number" data-count="4">4+</span>
+          <span class="stat-label">Third-party Trackers</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-number" data-count="0">0</span>
+          <span class="stat-label">Disclosed to Users</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Update / News Banners ─────────────────────────────── -->
+  <section id="updates" style="padding: 2rem 0;">
+    <div class="container">
+      <!-- Placeholder update banners — replace text later -->
+      <div class="callout callout-success">
+        <div class="callout-title">Update — [Date]</div>
+        [Platform] has removed the [tracker] script following responsible disclosure. We will continue monitoring.
+      </div>
+      <div class="callout callout-info">
+        <div class="callout-title">Paper Accepted — [Venue]</div>
+        Our peer-reviewed paper "<em>[Title]</em>" has been accepted to [Conference]. Preprint available below.
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Key Findings ──────────────────────────────────────── -->
+  <section id="findings">
+    <div class="container">
+      <h2 class="section-heading">Key Findings</h2>
+      <p class="section-subtitle">Placeholder — detailed findings will be filled in here. Each card represents one major result.</p>
+
+      <div class="two-col">
+        <div class="finding-card">
+          <div class="finding-title">Finding 1 — Conversation Leakage</div>
+          <p>[Placeholder] The full text of user prompts, including sensitive health queries, was observed in outbound requests to Meta's Pixel endpoint — during normal and incognito browsing sessions.</p>
+        </div>
+        <div class="finding-card blue">
+          <div class="finding-title">Finding 2 — Incognito Bypass</div>
+          <p>[Placeholder] Platform-native "privacy modes" did not prevent tracker execution or payload transmission. Conversations initiated in incognito still triggered advertising network calls.</p>
+        </div>
+        <div class="finding-card amber">
+          <div class="finding-title">Finding 3 — Server-side Mirroring</div>
+          <p>[Placeholder] Several platforms use the Meta Conversions API, a server-to-server channel, meaning browser-level blocking tools cannot intercept these transmissions.</p>
+        </div>
+        <div class="finding-card purple">
+          <div class="finding-title">Finding 4 — Opt-out Ineffectiveness</div>
+          <p>[Placeholder] Disabling training data opt-outs, conversation history, and personalization settings had no measurable effect on third-party tracker activity.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Affected Platforms ────────────────────────────────── -->
+  <section id="platforms">
+    <div class="container">
+      <h2 class="section-heading">Tested Platforms</h2>
+      <p class="section-subtitle">Platforms and surfaces tested. Tracker badges show what was observed — to be updated with full findings.</p>
+
+      <div class="platform-grid">
+
+        <div class="platform-card">
+          <div class="platform-name">Perplexity AI</div>
+          <div class="platform-surfaces">Web · Comet Browser · Mobile</div>
+          <div class="tracker-pills">
+            <span class="pill pill-meta">Meta Pixel</span>
+            <span class="pill pill-meta">Conversions API</span>
+            <span class="pill pill-google">Google Ads</span>
+            <span class="pill pill-google">DoubleClick</span>
+            <span class="pill pill-firebase">Firebase</span>
+          </div>
+        </div>
+
+        <div class="platform-card">
+          <div class="platform-name">ChatGPT</div>
+          <div class="platform-surfaces">Web · Mobile (iOS/Android)</div>
+          <div class="tracker-pills">
+            <span class="pill pill-unknown">TBD</span>
+          </div>
+        </div>
+
+        <div class="platform-card">
+          <div class="platform-name">Grok (xAI)</div>
+          <div class="platform-surfaces">Web · Android App</div>
+          <div class="tracker-pills">
+            <span class="pill pill-unknown">TBD</span>
+          </div>
+        </div>
+
+        <div class="platform-card">
+          <div class="platform-name">Claude</div>
+          <div class="platform-surfaces">Web</div>
+          <div class="tracker-pills">
+            <span class="pill pill-unknown">TBD</span>
+          </div>
+        </div>
+
+        <div class="platform-card">
+          <div class="platform-name">Perplexity Comet</div>
+          <div class="platform-surfaces">Browser (Desktop)</div>
+          <div class="tracker-pills">
+            <span class="pill pill-unknown">TBD</span>
+          </div>
+        </div>
+
+        <div class="platform-card">
+          <div class="platform-name">Atlas Browser</div>
+          <div class="platform-surfaces">Browser (Mobile)</div>
+          <div class="tracker-pills">
+            <span class="pill pill-unknown">TBD</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Leakage Matrix ────────────────────────────────────── -->
+  <section id="leakage-matrix">
+    <div class="container">
+      <h2 class="section-heading">Leakage Matrix</h2>
+      <p class="section-subtitle">
+        What data does each platform leak, to which tracker, and under which conditions?
+        ✓ = confirmed leak &nbsp; ✗ = not observed &nbsp; ~ = partial &nbsp; ? = untested
+      </p>
+
+      <div class="table-wrap">
+        <table class="matrix" id="matrix-table">
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Surface</th>
+              <th>Tracker</th>
+              <th>Prompt Text</th>
+              <th>User ID</th>
+              <th>IP / Location</th>
+              <th>Incognito Safe?</th>
+              <th>Opt-out Safe?</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="platform-col">Perplexity</td>
+              <td>Web</td>
+              <td><span class="pill pill-meta" style="font-size:0.75rem;">Meta Pixel</span></td>
+              <td class="leak-yes">✓</td>
+              <td class="leak-yes">✓</td>
+              <td class="leak-yes">✓</td>
+              <td class="leak-no">✗</td>
+              <td class="leak-no">✗</td>
+              <td><span class="severity sev-critical">Critical</span></td>
+            </tr>
+            <tr>
+              <td class="platform-col">Perplexity</td>
+              <td>Web</td>
+              <td><span class="pill pill-meta" style="font-size:0.75rem;">Conversions API</span></td>
+              <td class="leak-yes">✓</td>
+              <td class="leak-yes">✓</td>
+              <td class="leak-yes">✓</td>
+              <td class="leak-no">✗</td>
+              <td class="leak-no">✗</td>
+              <td><span class="severity sev-critical">Critical</span></td>
+            </tr>
+            <tr>
+              <td class="platform-col">Perplexity</td>
+              <td>Web</td>
+              <td><span class="pill pill-google" style="font-size:0.75rem;">Google Ads</span></td>
+              <td class="leak-unk">?</td>
+              <td class="leak-yes">✓</td>
+              <td class="leak-yes">✓</td>
+              <td class="leak-unk">?</td>
+              <td class="leak-unk">?</td>
+              <td><span class="severity sev-high">High</span></td>
+            </tr>
+            <tr>
+              <td class="platform-col">Perplexity</td>
+              <td>Web</td>
+              <td><span class="pill pill-firebase" style="font-size:0.75rem;">Firebase</span></td>
+              <td class="leak-unk">?</td>
+              <td class="leak-yes">✓</td>
+              <td class="leak-part">~</td>
+              <td class="leak-unk">?</td>
+              <td class="leak-unk">?</td>
+              <td><span class="severity sev-high">High</span></td>
+            </tr>
+            <tr>
+              <td class="platform-col">ChatGPT</td>
+              <td>Web</td>
+              <td><span class="pill pill-unknown" style="font-size:0.75rem;">TBD</span></td>
+              <td class="leak-unk">?</td>
+              <td class="leak-unk">?</td>
+              <td class="leak-unk">?</td>
+              <td class="leak-unk">?</td>
+              <td class="leak-unk">?</td>
+              <td><span class="severity sev-medium">Pending</span></td>
+            </tr>
+            <tr>
+              <td class="platform-col">Grok</td>
+              <td>Web</td>
+              <td><span class="pill pill-unknown" style="font-size:0.75rem;">TBD</span></td>
+              <td class="leak-unk">?</td>
+              <td class="leak-unk">?</td>
+              <td class="leak-unk">?</td>
+              <td class="leak-unk">?</td>
+              <td class="leak-unk">?</td>
+              <td><span class="severity sev-medium">Pending</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:0.8rem; font-size:0.82rem; color:var(--muted);">
+        Full dataset and HAR files will be released alongside the paper. Table is sortable.
+        <a href="#methodology">See methodology</a> for experimental conditions.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── Condition Matrix ──────────────────────────────────── -->
+  <section id="conditions">
+    <div class="container">
+      <h2 class="section-heading">Privacy Mode Breakdown</h2>
+      <p class="section-subtitle">
+        Does the leakage persist across different privacy settings? Testing matrix across conditions for Perplexity.
+        To be expanded for all platforms.
+      </p>
+
+      <div class="table-wrap" style="max-width: 820px;">
+        <table class="matrix conditions" id="conditions-table">
+          <thead>
+            <tr>
+              <th>Condition</th>
+              <th>Meta Pixel</th>
+              <th>Conversions API</th>
+              <th>Google Ads</th>
+              <th>Firebase</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="platform-col">Normal (logged out)</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td style="font-size:0.82rem;color:var(--muted);">Baseline</td>
+            </tr>
+            <tr>
+              <td class="platform-col">Normal (logged in, free)</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td style="font-size:0.82rem;color:var(--muted);">Prompt text in payload</td>
+            </tr>
+            <tr>
+              <td class="platform-col">Platform Incognito</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-partial">~</td>
+              <td class="cond-partial">~</td>
+              <td style="font-size:0.82rem;color:var(--muted);">Not blocked</td>
+            </tr>
+            <tr>
+              <td class="platform-col">Browser Private Window</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td style="font-size:0.82rem;color:var(--muted);">No difference</td>
+            </tr>
+            <tr>
+              <td class="platform-col">Training Opt-out ON</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td style="font-size:0.82rem;color:var(--muted);">No effect on trackers</td>
+            </tr>
+            <tr>
+              <td class="platform-col">All Privacy Toggles ON</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-yes">✓</td>
+              <td class="cond-partial">~</td>
+              <td class="cond-partial">~</td>
+              <td style="font-size:0.82rem;color:var(--muted);">Largely ineffective</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Example Payload ───────────────────────────────────── -->
+  <section id="evidence">
+    <div class="container">
+      <h2 class="section-heading">Evidence — Network Payload</h2>
+      <p class="section-subtitle">
+        Illustrative example of observed outbound request to Meta Pixel. Sensitive values redacted pending full disclosure.
+      </p>
+
+      <div class="payload-block">
+        <code>
+<span class="comment">// POST https://www.facebook.com/tr/ — captured during Perplexity search session</span>
+<span class="comment">// Standard test prompt: "What are the symptoms of liver cancer..."</span>
+
+{
+  <span class="key">"event_name"</span>:       <span class="val">"PageView"</span>,
+  <span class="key">"event_time"</span>:       <span class="val">1743XXXXXXX</span>,
+  <span class="key">"user_data"</span>: {
+    <span class="key">"em"</span>:             <span class="redact">"[HASHED EMAIL]"</span>,
+    <span class="key">"fbc"</span>:            <span class="redact">"[FB CLICK ID]"</span>,
+    <span class="key">"client_ip_address"</span>: <span class="redact">"[USER IP]"</span>
+  },
+  <span class="key">"custom_data"</span>: {
+    <span class="key">"content_name"</span>:   <span class="redact">"[CONVERSATION TEXT — CONTAINS PROMPT]"</span>,
+    <span class="key">"search_string"</span>:  <span class="redact">"[HEALTH QUERY]"</span>
+  },
+  <span class="key">"action_source"</span>:    <span class="val">"website"</span>
+}
+        </code>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Methodology ───────────────────────────────────────── -->
+  <section id="methodology">
+    <div class="container">
+      <h2 class="section-heading">Methodology</h2>
+      <p class="section-subtitle">
+        A standardized, reproducible protocol applied uniformly across all platforms and surfaces.
+      </p>
+
+      <div class="method-steps">
+        <div class="method-step">
+          <h4>Instrument &amp; Intercept</h4>
+          <p>mitmproxy (mobile) and Puppeteer+stealth (web) intercept all outbound network traffic during controlled interaction sessions.</p>
+        </div>
+        <div class="method-step">
+          <h4>Standardized Test Prompt</h4>
+          <p>A fixed health-related prompt is used identically on all surfaces, enabling detection of exact prompt text appearing in tracker payloads.</p>
+        </div>
+        <div class="method-step">
+          <h4>Condition Matrix</h4>
+          <p>Each surface is tested across all combinations of auth state, platform privacy mode, browser private mode, and privacy toggle settings.</p>
+        </div>
+        <div class="method-step">
+          <h4>Tracker Detection</h4>
+          <p>Outbound requests are matched against a curated tracker domain list. PII detection scans payloads for prompt text, emails, and identifiers.</p>
+        </div>
+        <div class="method-step">
+          <h4>HAR + JSON Archiving</h4>
+          <p>Full session traffic is exported as HAR files and structured JSON for reproducibility and later third-party verification.</p>
+        </div>
+        <div class="method-step">
+          <h4>Cross-surface Comparison</h4>
+          <p>Findings are unified into a normalized comparison table, enabling apples-to-apples comparison across all tested AI platforms.</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 2rem;">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">Standard Test Prompt</h3>
+        <div class="callout" style="background: #fff; border-color: var(--muted); font-family: Georgia, serif; font-style: italic; font-size: 0.95rem;">
+          "What are the symptoms of liver cancer and what treatment options exist?"
+          <br><br>
+          <span style="font-style: normal; font-size: 0.85rem; color: var(--muted);">Follow-up:</span>
+          <br>
+          <em>"Can you help me interpret a biopsy result? My doctor said stage 2."</em>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Disclosure Timeline ───────────────────────────────── -->
+  <section id="disclosure">
+    <div class="container">
+      <h2 class="section-heading">Disclosure Timeline</h2>
+      <p class="section-subtitle">Responsible disclosure process. Dates and responses to be filled in.</p>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-date">TBD</div>
+          <div class="tl-dot"></div>
+          <div class="tl-body">
+            <strong>Initial Discovery</strong>
+            <p>[Placeholder] First observed tracker activity during routine traffic analysis of Perplexity AI web interface.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">TBD</div>
+          <div class="tl-dot"></div>
+          <div class="tl-body">
+            <strong>Expanded Testing</strong>
+            <p>[Placeholder] Systematic testing across all platforms and surfaces commenced. Condition matrix applied consistently.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">TBD</div>
+          <div class="tl-dot"></div>
+          <div class="tl-body">
+            <strong>Vendor Notification — Perplexity</strong>
+            <p>[Placeholder] Perplexity AI notified of findings via security disclosure channel.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">TBD</div>
+          <div class="tl-dot"></div>
+          <div class="tl-body">
+            <strong>Vendor Response</strong>
+            <p>[Placeholder] Awaiting / received response from [Platform]. Details to be disclosed here.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">TBD</div>
+          <div class="tl-dot open"></div>
+          <div class="tl-body">
+            <strong>Public Disclosure</strong>
+            <p>[Placeholder] This page and accompanying paper published.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 2rem; font-size: 0.88rem; color: var(--muted-dark);">
+        <strong>Note:</strong> We follow responsible disclosure principles. Vendors were given a reasonable window
+        to respond and remediate before public disclosure. Litigation context: see
+        <em>Doe v. Perplexity AI, Meta Platforms, Google</em>, Case 3:26-cv-02803 (filed 2026-03-31).
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Paper / Resources ─────────────────────────────────── -->
+  <section id="paper">
+    <div class="container">
+      <h2 class="section-heading">Paper &amp; Resources</h2>
+      <p class="section-subtitle">Research artifacts, code, and datasets will be linked here on publication.</p>
+
+      <div class="two-col">
+        <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1.4rem; background: #fff;">
+          <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 0.5rem;">Research Paper</div>
+          <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; line-height: 1.35;">[Paper Title Placeholder]</div>
+          <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem;">[Authors] · [Venue] · [Year]</div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="#" class="btn btn-primary" style="font-size: 0.8rem; padding: 5px 14px;">PDF</a>
+            <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px;">arXiv</a>
+            <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px;">BibTeX</a>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.2rem; background: #fff; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.88rem; font-weight: 700;">Source Code &amp; Scanner</div>
+              <div style="font-size: 0.8rem; color: var(--muted);">Puppeteer tracker scanner + mobile methodology</div>
+            </div>
+            <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px;">GitHub</a>
+          </div>
+          <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.2rem; background: #fff; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.88rem; font-weight: 700;">Dataset &amp; HAR Files</div>
+              <div style="font-size: 0.8rem; color: var(--muted);">Full session captures, JSON reports</div>
+            </div>
+            <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px;">Zenodo</a>
+          </div>
+          <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.2rem; background: #fff; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.88rem; font-weight: 700;">Policy Archive</div>
+              <div style="font-size: 0.8rem; color: var(--muted);">Timestamped privacy policy snapshots</div>
+            </div>
+            <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px;">View</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FAQ ──────────────────────────────────────────────── -->
+  <section id="faq">
+    <div class="container">
+      <h2 class="section-heading">FAQ</h2>
+      <p class="section-subtitle">Common questions about the research and its implications.</p>
+
+      <div class="faq-list">
+
+        <details class="faq">
+          <summary>Am I affected if I use these AI platforms?</summary>
+          <div class="faq-body">
+            <p>[Placeholder answer] If you have used any of the tested platforms while entering sensitive queries,
+            your conversation data may have been transmitted to third-party advertising networks.
+            This includes sessions in "private" or "incognito" mode.</p>
+          </div>
+        </details>
+
+        <details class="faq">
+          <summary>What data specifically was leaked?</summary>
+          <div class="faq-body">
+            <p>[Placeholder answer] We observed varying degrees of leakage: from basic session identifiers and IP addresses
+            to, in severe cases, the full text of conversation prompts appearing in advertising network payloads.</p>
+          </div>
+        </details>
+
+        <details class="faq">
+          <summary>Does using a VPN or ad-blocker protect me?</summary>
+          <div class="faq-body">
+            <p>[Placeholder answer] Browser-based ad blockers can intercept client-side Pixel requests, but cannot
+            block server-to-server transmission via Meta's Conversions API. A VPN may obscure your IP but does not
+            prevent the platform from relaying conversation content via server-side channels.</p>
+          </div>
+        </details>
+
+        <details class="faq">
+          <summary>Have the affected companies been notified?</summary>
+          <div class="faq-body">
+            <p>[Placeholder answer] We followed responsible disclosure. See the <a href="#disclosure">Disclosure Timeline</a>
+            for the current status of vendor notifications and responses.</p>
+          </div>
+        </details>
+
+        <details class="faq">
+          <summary>How was this research conducted?</summary>
+          <div class="faq-body">
+            <p>[Placeholder answer] See the full <a href="#methodology">Methodology</a> section. In brief:
+            we used network interception tools (mitmproxy and Puppeteer) to capture all outbound traffic
+            during standardized interaction sessions, then analyzed payloads for PII and conversation content.</p>
+          </div>
+        </details>
+
+        <details class="faq">
+          <summary>What legal context exists around these findings?</summary>
+          <div class="faq-body">
+            <p>[Placeholder answer] <em>Doe v. Perplexity AI, Meta Platforms, Google</em> (Case 3:26-cv-02803,
+            filed March 31, 2026) independently confirmed Perplexity's embedding of Meta Pixel and other trackers.
+            Our research provides technical corroboration and broader coverage across additional platforms.</p>
+          </div>
+        </details>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Contact / Team ────────────────────────────────────── -->
+  <section id="contact">
+    <div class="container">
+      <h2 class="section-heading">Researchers</h2>
+      <p class="section-subtitle">Questions, responsible disclosure, or collaboration inquiries.</p>
+
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+        <!-- Researcher card placeholder — duplicate as needed -->
+        <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1.2rem 1.4rem; background: #fff; min-width: 220px;">
+          <div style="font-size: 0.98rem; font-weight: 700; margin-bottom: 0.15rem;">[Researcher Name]</div>
+          <div style="font-size: 0.82rem; color: var(--muted); margin-bottom: 0.6rem;">[Affiliation]</div>
+          <a href="mailto:placeholder@example.com" style="font-size: 0.82rem;">placeholder@example.com</a>
+        </div>
+        <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1.2rem 1.4rem; background: #fff; min-width: 220px;">
+          <div style="font-size: 0.98rem; font-weight: 700; margin-bottom: 0.15rem;">[Researcher Name]</div>
+          <div style="font-size: 0.82rem; color: var(--muted); margin-bottom: 0.6rem;">[Affiliation]</div>
+          <a href="mailto:placeholder@example.com" style="font-size: 0.82rem;">placeholder@example.com</a>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; font-size: 0.88rem; color: var(--muted-dark);">
+        For responsible disclosure or security concerns, please email us directly.
+        For press inquiries, see the paper or contact the corresponding author.
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Footer ────────────────────────────────────────────── -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <div class="footer-brand">LeakyLLM</div>
+          <div class="footer-copy">Privacy research disclosure · [Year] · [Institution]</div>
+        </div>
+        <div class="footer-links">
+          <a href="#findings">Findings</a>
+          <a href="#leakage-matrix">Data</a>
+          <a href="#methodology">Methodology</a>
+          <a href="#paper">Paper</a>
+          <a href="#disclosure">Disclosure</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─── Scripts ───────────────────────────────────────────── -->
+  <script>
+    // Highlight active nav link on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          navLinks.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+          });
+        }
+      });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+
+    sections.forEach(s => observer.observe(s));
+
+    // Animated stat counters
+    const statNumbers = document.querySelectorAll('.stat-number[data-count]');
+    const countObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseInt(el.dataset.count, 10);
+          const suffix = el.textContent.replace(/[0-9]/g, '');
+          let current = 0;
+          const step = Math.ceil(target / 30);
+          const timer = setInterval(() => {
+            current = Math.min(current + step, target);
+            el.textContent = current + suffix;
+            if (current >= target) clearInterval(timer);
+          }, 40);
+          countObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    statNumbers.forEach(el => countObserver.observe(el));
+
+    // Init DataTables for sortable matrices
+    $(document).ready(function () {
+      $('#matrix-table').DataTable({
+        paging: false,
+        searching: false,
+        info: false,
+        order: [],
+        columnDefs: [{ orderable: false, targets: [3,4,5,6,7] }]
+      });
+      $('#conditions-table').DataTable({
+        paging: false,
+        searching: false,
+        info: false,
+        order: [],
+        columnDefs: [{ orderable: false, targets: [1,2,3,4] }]
+      });
+    });
+  </script>
+</body>
+</html>
