@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Research disclosure: AI assistants leak your conversations to third-party trackers including Meta, Google, and others.">
-  <title>LeakyLLM — AI Assistants Are Leaking Your Conversations</title>
+  <title>LeakyLM — AI Assistants Are Leaking Your Conversations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -88,7 +88,7 @@
     .site-title {
       font-size: 1.05rem;
       font-weight: 700;
-      color: var(--brand);
+      color: #1a1a1a;
       letter-spacing: -0.01em;
       white-space: nowrap;
       margin-right: 2rem;
@@ -333,11 +333,47 @@
     }
 
     .platform-surfaces {
-      font-size: 0.78rem;
-      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
       margin-bottom: 0.75rem;
+    }
+
+    .surface-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.03em;
+      color: var(--muted-dark);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 7px;
+    }
+
+    .surface-tag svg {
+      width: 11px;
+      height: 11px;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+
+    .surface-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.82rem;
+      color: var(--muted-dark);
+      white-space: nowrap;
+    }
+    .surface-icon svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+      color: var(--muted);
     }
 
     .tracker-pills {
@@ -650,7 +686,7 @@
     .footer-brand {
       font-size: 1rem;
       font-weight: 700;
-      color: var(--brand);
+      color: #1a1a1a;
       margin-bottom: 0.3rem;
     }
 
@@ -698,7 +734,7 @@
   <!-- ─── Navigation ─────────────────────────────────────────── -->
   <nav class="site-nav" id="site-nav">
     <div class="nav-inner">
-      <a href="#" class="site-title">LeakyLLM</a>
+      <a href="#" class="site-title"><span style="color:var(--brand);">L</span>eaky<span style="color:var(--brand);">LM</span></a>
       <div class="nav-links" id="nav-links">
         <a href="#findings">Findings</a>
         <a href="#platforms">Platforms</a>
@@ -806,7 +842,11 @@
 
         <div class="platform-card">
           <div class="platform-name">Perplexity AI</div>
-          <div class="platform-surfaces">Web · Comet Browser · Mobile</div>
+          <div class="platform-surfaces">
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Browser</span>
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Mobile</span>
+          </div>
           <div class="tracker-pills">
             <span class="pill pill-meta">Meta Pixel</span>
             <span class="pill pill-meta">Conversions API</span>
@@ -818,7 +858,11 @@
 
         <div class="platform-card">
           <div class="platform-name">ChatGPT</div>
-          <div class="platform-surfaces">Web · Mobile (iOS/Android)</div>
+          <div class="platform-surfaces">
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>iOS</span>
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Android</span>
+          </div>
           <div class="tracker-pills">
             <span class="pill pill-unknown">TBD</span>
           </div>
@@ -826,7 +870,10 @@
 
         <div class="platform-card">
           <div class="platform-name">Grok (xAI)</div>
-          <div class="platform-surfaces">Web · Android App</div>
+          <div class="platform-surfaces">
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Android</span>
+          </div>
           <div class="tracker-pills">
             <span class="pill pill-unknown">TBD</span>
           </div>
@@ -834,7 +881,9 @@
 
         <div class="platform-card">
           <div class="platform-name">Claude</div>
-          <div class="platform-surfaces">Web</div>
+          <div class="platform-surfaces">
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
+          </div>
           <div class="tracker-pills">
             <span class="pill pill-unknown">TBD</span>
           </div>
@@ -842,7 +891,9 @@
 
         <div class="platform-card">
           <div class="platform-name">Perplexity Comet</div>
-          <div class="platform-surfaces">Browser (Desktop)</div>
+          <div class="platform-surfaces">
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Desktop Browser</span>
+          </div>
           <div class="tracker-pills">
             <span class="pill pill-unknown">TBD</span>
           </div>
@@ -850,7 +901,9 @@
 
         <div class="platform-card">
           <div class="platform-name">Atlas Browser</div>
-          <div class="platform-surfaces">Browser (Mobile)</div>
+          <div class="platform-surfaces">
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Mobile Browser</span>
+          </div>
           <div class="tracker-pills">
             <span class="pill pill-unknown">TBD</span>
           </div>
@@ -887,7 +940,7 @@
           <tbody>
             <tr>
               <td class="platform-col">Perplexity</td>
-              <td>Web</td>
+              <td><span class="surface-icon" title="Web"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span></td>
               <td><span class="pill pill-meta" style="font-size:0.75rem;">Meta Pixel</span></td>
               <td class="leak-yes">✓</td>
               <td class="leak-yes">✓</td>
@@ -898,7 +951,7 @@
             </tr>
             <tr>
               <td class="platform-col">Perplexity</td>
-              <td>Web</td>
+              <td><span class="surface-icon" title="Web"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span></td>
               <td><span class="pill pill-meta" style="font-size:0.75rem;">Conversions API</span></td>
               <td class="leak-yes">✓</td>
               <td class="leak-yes">✓</td>
@@ -909,7 +962,7 @@
             </tr>
             <tr>
               <td class="platform-col">Perplexity</td>
-              <td>Web</td>
+              <td><span class="surface-icon" title="Web"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span></td>
               <td><span class="pill pill-google" style="font-size:0.75rem;">Google Ads</span></td>
               <td class="leak-unk">?</td>
               <td class="leak-yes">✓</td>
@@ -920,7 +973,7 @@
             </tr>
             <tr>
               <td class="platform-col">Perplexity</td>
-              <td>Web</td>
+              <td><span class="surface-icon" title="Web"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span></td>
               <td><span class="pill pill-firebase" style="font-size:0.75rem;">Firebase</span></td>
               <td class="leak-unk">?</td>
               <td class="leak-yes">✓</td>
@@ -931,7 +984,7 @@
             </tr>
             <tr>
               <td class="platform-col">ChatGPT</td>
-              <td>Web</td>
+              <td><span class="surface-icon" title="Web"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span></td>
               <td><span class="pill pill-unknown" style="font-size:0.75rem;">TBD</span></td>
               <td class="leak-unk">?</td>
               <td class="leak-unk">?</td>
@@ -942,7 +995,7 @@
             </tr>
             <tr>
               <td class="platform-col">Grok</td>
-              <td>Web</td>
+              <td><span class="surface-icon" title="Web"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span></td>
               <td><span class="pill pill-unknown" style="font-size:0.75rem;">TBD</span></td>
               <td class="leak-unk">?</td>
               <td class="leak-unk">?</td>
@@ -1316,7 +1369,7 @@
     <div class="container">
       <div class="footer-inner">
         <div>
-          <div class="footer-brand">LeakyLLM</div>
+          <div class="footer-brand"><span style="color:var(--brand);">L</span>eaky<span style="color:var(--brand);">LM</span></div>
           <div class="footer-copy">Privacy research disclosure · [Year] · [Institution]</div>
         </div>
         <div class="footer-links">
