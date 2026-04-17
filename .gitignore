@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Secrets / keys
+.env
+*.key
+*.pem
+
+# Node (if tooling is added)
+node_modules/
+npm-debug.log*
+
+# Python (if tooling is added)
+__pycache__/
+*.pyc
+.venv/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build output
+dist/

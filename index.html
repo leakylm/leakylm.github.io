@@ -117,6 +117,15 @@
     .nav-links a:hover { opacity: 1; color: var(--brand); text-decoration: none; }
     .nav-links a.active { opacity: 1; color: var(--brand); border-bottom: 2px solid var(--brand); border-radius: 0; }
 
+    .nav-divider {
+      display: inline-block;
+      width: 1px;
+      height: 14px;
+      background: var(--border);
+      margin: 0 0.3rem;
+      vertical-align: middle;
+    }
+
     .nav-ext {
       margin-left: auto;
       display: flex;
@@ -192,7 +201,25 @@
       display: flex;
       gap: 0.8rem;
       flex-wrap: wrap;
-      margin-bottom: 2.5rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .hero-callouts {
+      padding: 1rem 0 0;
+    }
+
+    .hero-callouts .callout {
+      padding: 0.45rem 0.9rem;
+      font-size: 0.82rem;
+      margin-bottom: 0.4rem;
+      line-height: 1.5;
+    }
+
+    .hero-callouts .callout:last-child { margin-bottom: 0; }
+
+    .hero-callouts .callout-title {
+      font-size: 0.68rem;
+      margin-bottom: 0.1rem;
     }
 
     .btn {
@@ -226,16 +253,30 @@
     }
     .btn-neutral:hover { border-color: var(--muted-dark); color: var(--text); }
 
+    /* ─── Hero Body (two-column) ────────────────────────────────── */
+    .hero-body {
+      display: flex;
+      gap: 3rem;
+      align-items: flex-start;
+    }
+
+    .hero-text {
+      flex: 1;
+      min-width: 0;
+    }
+
     /* ─── Hero Stats ────────────────────────────────────────────── */
     .hero-stats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: 1fr 1fr;
       gap: 1px;
       background: var(--border);
       border: 1px solid var(--border);
       border-radius: 6px;
       overflow: hidden;
-      max-width: 760px;
+      flex-shrink: 0;
+      width: 300px;
+      align-self: center;
     }
 
     .stat-cell {
@@ -581,6 +622,96 @@
       margin-top: 1.5rem;
     }
 
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 800px) { .three-col { grid-template-columns: 1fr; } }
+
+    /* ─── Researcher cards ─────────────────────────────────────── */
+    .researcher-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.6rem 1.4rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .researcher-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      border-color: #d0d0d0;
+    }
+    .researcher-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--brand-light);
+      color: var(--brand);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .researcher-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+    .researcher-affil {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.85rem;
+    }
+    .researcher-email {
+      font-size: 0.76rem;
+      color: var(--link);
+      word-break: break-all;
+      line-height: 1.4;
+    }
+    .researcher-email:hover { text-decoration: underline; }
+
+    .doc-link {
+      color: var(--link);
+      font-weight: 600;
+      text-decoration: underline;
+      text-decoration-color: #b8d4ee;
+      text-underline-offset: 2px;
+    }
+    .doc-link:hover { text-decoration-color: var(--link); }
+
+    .inline-code {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.82em;
+      background: #f0f4f8;
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--text);
+    }
+
+    .findings-coda {
+      margin-top: 1.5rem;
+      font-size: 0.92rem;
+      color: var(--muted-dark);
+      font-style: italic;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      max-width: 820px;
+    }
+
     /* ─── Finding Cards ─────────────────────────────────────────── */
     .finding-card {
       border-left: 4px solid var(--brand);
@@ -647,6 +778,125 @@
       line-height: 1.55;
     }
 
+    /* ─── Research Figures ──────────────────────────────────────── */
+    .research-figure {
+      margin: 0 0 3rem;
+      padding: 0;
+    }
+    .research-figure:last-child { margin-bottom: 0; }
+
+    .figure-img-wrap {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f8f8f8;
+      line-height: 0;
+      position: relative;
+      cursor: zoom-in;
+    }
+
+    .figure-img-wrap::after {
+      content: 'Click to expand';
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #fff;
+      background: rgba(0,0,0,0.45);
+      padding: 3px 8px;
+      border-radius: 3px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .figure-img-wrap:hover::after { opacity: 1; }
+
+    .figure-img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: filter 0.2s;
+    }
+    .figure-img-wrap:hover img { filter: brightness(0.97); }
+
+    figcaption {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted-dark);
+      line-height: 1.6;
+      max-width: 860px;
+    }
+
+    .fig-label {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* ─── Lightbox ───────────────────────────────────────────────── */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      cursor: zoom-out;
+    }
+    .lightbox.open { display: flex; animation: lbFade 0.2s ease; }
+
+    @keyframes lbFade {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .lightbox-inner {
+      max-width: 1200px;
+      width: 100%;
+      cursor: default;
+    }
+
+    .lightbox-inner img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      display: block;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    .lightbox-caption {
+      margin-top: 0.9rem;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+      text-align: center;
+    }
+    .lightbox-caption strong { color: #fff; }
+
+    .lightbox-close {
+      position: fixed;
+      top: 1.2rem;
+      right: 1.5rem;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.7);
+      font-size: 1rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
     /* ─── Code / Payload block ──────────────────────────────────── */
     .payload-block {
       background: #1e1e2e;
@@ -709,7 +959,8 @@
     /* ─── Responsive ────────────────────────────────────────────── */
     @media (max-width: 800px) {
       .hero h1 { font-size: 1.9rem; }
-      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .hero-body { flex-direction: column; }
+      .hero-stats { width: 100%; grid-template-columns: repeat(2, 1fr); }
       .platform-grid { grid-template-columns: repeat(2, 1fr); }
       .two-col { grid-template-columns: 1fr; gap: 1rem; }
       .method-steps { grid-template-columns: 1fr 1fr; }
@@ -719,7 +970,6 @@
     @media (max-width: 600px) {
       :root { --gap: 18px; }
       .hero h1 { font-size: 1.55rem; }
-      .hero-stats { grid-template-columns: repeat(2, 1fr); }
       .platform-grid { grid-template-columns: 1fr; }
       .method-steps { grid-template-columns: 1fr; }
       .timeline::before { left: 0; }
@@ -737,8 +987,12 @@
       <a href="#" class="site-title"><span style="color:var(--brand);">L</span>eaky<span style="color:var(--brand);">LM</span></a>
       <div class="nav-links" id="nav-links">
         <a href="#findings">Findings</a>
-        <a href="#platforms">Platforms</a>
         <a href="#leakage-matrix">Leakage Matrix</a>
+        <span class="nav-divider"></span>
+        <a href="#web">Web</a>
+        <a href="#browser">Browser</a>
+        <a href="#mobile">Mobile</a>
+        <span class="nav-divider"></span>
         <a href="#methodology">Methodology</a>
         <a href="#disclosure">Disclosure</a>
         <a href="#faq">FAQ</a>
@@ -757,114 +1011,161 @@
         <span class="dot"></span>
         Research Disclosure
       </div>
-      <h1>Your AI Assistant Is <em>Leaking</em> Your Conversations</h1>
-      <p class="hero-lead">
-        We systematically investigated popular AI search assistants and found that conversations — including
-        sensitive health queries — are being transmitted to third-party advertising trackers, even in
-        "private" and incognito modes.
-      </p>
-      <div class="hero-actions">
-        <a href="#leakage-matrix" class="btn btn-primary">See the Evidence</a>
-        <a href="#paper" class="btn btn-outline">Read the Paper</a>
-        <a href="#methodology" class="btn btn-neutral">Methodology</a>
-      </div>
+      <div class="hero-body">
+        <div class="hero-text">
+          <h1>Your AI Assistant Is <em>Leaking</em> Your Conversations</h1>
+          <p class="hero-lead">
+            We disclose structural privacy risks in prominent generative AI products — Perplexity, Anthropic's Claude,
+            xAI's Grok, and OpenAI's ChatGPT — caused by third-party trackers embedded in LLM services that
+            leak user conversations, identities, and sensitive metadata.
+          </p>
+          <div class="hero-actions">
+            <a href="#leakage-matrix" class="btn btn-primary">See the Evidence</a>
+            <a href="#paper" class="btn btn-outline">Read the Paper</a>
+            <a href="#methodology" class="btn btn-neutral">Methodology</a>
+          </div>
+        </div>
 
-      <div class="hero-stats">
-        <div class="stat-cell">
-          <span class="stat-number" data-count="6">6</span>
-          <span class="stat-label">AI Platforms Tested</span>
-        </div>
-        <div class="stat-cell">
-          <span class="stat-number" data-count="12">12</span>
-          <span class="stat-label">Unique Surfaces</span>
-        </div>
-        <div class="stat-cell">
-          <span class="stat-number" data-count="4">4+</span>
-          <span class="stat-label">Third-party Trackers</span>
-        </div>
-        <div class="stat-cell">
-          <span class="stat-number" data-count="0">0</span>
-          <span class="stat-label">Disclosed to Users</span>
+        <div class="hero-stats">
+          <div class="stat-cell">
+            <span class="stat-number" data-count="4">4</span>
+            <span class="stat-label">AI Platforms Tested</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-number" data-count="13">13+</span>
+            <span class="stat-label">Third-party Trackers Found</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-number" data-count="4">4</span>
+            <span class="stat-label">Platforms Affected</span>
+          </div>
+          <div class="stat-cell">
+            <span class="stat-number" data-count="0">0</span>
+            <span class="stat-label">Disclosed to Users</span>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ─── Update / News Banners ─────────────────────────────── -->
-  <section id="updates" style="padding: 2rem 0;">
+  <!-- ─── Callouts ────────────────────────────────────────── -->
+  <div class="hero-callouts">
     <div class="container">
-      <!-- Placeholder update banners — replace text later -->
       <div class="callout callout-success">
         <div class="callout-title">Update — [Date]</div>
-        [Platform] has removed the [tracker] script following responsible disclosure. We will continue monitoring.
+        [Platform] has removed the [tracker] script following responsible disclosure.
       </div>
       <div class="callout callout-info">
         <div class="callout-title">Paper Accepted — [Venue]</div>
-        Our peer-reviewed paper "<em>[Title]</em>" has been accepted to [Conference]. Preprint available below.
+        Our peer-reviewed paper "<em>[Title]</em>" has been accepted to [Conference].
       </div>
     </div>
+  </div>
+
+  <!-- ─── Description ──────────────────────────────────────── -->
+  <section id="description">
+    <div class="container">
+      <p style="font-size: 1rem; line-height: 1.8; color: var(--text); margin-bottom: 1.25em;">
+        Generative AI is rapidly becoming a foundational layer of the Internet, enabling the emergence of
+        agentic systems that mediate users' interaction with digital services. Despite this transformation,
+        underlying data-driven economic dynamics remain largely unchanged, as acknowledged by prominent
+        <a href="https://www.criteo.com" class="doc-link" target="_blank" rel="noopener">industry actors</a>. This continuity extends to the integration of third-party trackers within generative AI
+        ecosystems to monitor users' actions, which retain the capability to collect sensitive user data.
+      </p>
+      <p style="font-size: 1rem; line-height: 1.8; color: var(--text); margin-bottom: 0;">
+        In this report, we disclose concerning structural privacy risks caused by (1) the systematic introduction
+        of third-party analytics services in prominent generative AI products developed by major AI actors
+        such as Perplexity, Anthropic's Claude, xAI's Grok, and OpenAI's ChatGPT; and (2) insecure access
+        control mechanisms in some of these LLMs that leak user conversations to third-party trackers
+        embedded in LLM services, as well as the conversation title which can be a very sensitive data type
+        that can disclose users' concerns, conversation topics, interests, and more. Meta's AI, MS Copilot,
+        and Google Gemini are out of scope of this analysis because they act both as LLM providers and
+        third-party trackers, falling into a different threat model. We plan to extend the scope of our analysis
+        to include these products in the coming weeks.
+      </p>
+    </div>
   </section>
+
 
   <!-- ─── Key Findings ──────────────────────────────────────── -->
   <section id="findings">
     <div class="container">
-      <h2 class="section-heading">Key Findings</h2>
-      <p class="section-subtitle">Placeholder — detailed findings will be filled in here. Each card represents one major result.</p>
+      <h2 class="section-heading">Key privacy concerning observations</h2>
 
-      <div class="two-col">
+      <div class="three-col">
         <div class="finding-card">
-          <div class="finding-title">Finding 1 — Conversation Leakage</div>
-          <p>[Placeholder] The full text of user prompts, including sensitive health queries, was observed in outbound requests to Meta's Pixel endpoint — during normal and incognito browsing sessions.</p>
+          <div class="finding-title">Leakage of conversation URLs to third-party advertising and tracking services</div>
+          <p>User conversations in LLM services frequently contain sensitive information introduced by end users. Yet, conversation URLs are disclosed to third-party trackers such as the Meta Pixel, as shown in Figure 1 by default, for Grok and Perplexity. These URLs often serve as publicly available <a href="https://en.wikipedia.org/wiki/Permalink" class="doc-link" target="_blank" rel="noopener">permalinks</a> with weak access control, making them accessible by default to anyone knowing the URL. This potentially allows the trackers to access user conversations and their content. <a href="#conditions" class="doc-link">Table 1</a> describes the default access control mechanisms across LLMs.</p>
         </div>
         <div class="finding-card blue">
-          <div class="finding-title">Finding 2 — Incognito Bypass</div>
-          <p>[Placeholder] Platform-native "privacy modes" did not prevent tracker execution or payload transmission. Conversations initiated in incognito still triggered advertising network calls.</p>
+          <div class="finding-title">Linkability to user identities</div>
+          <p>Conversation URLs are frequently shared by LLM providers alongside tracking identifiers to third-party trackers (e.g., cookies such as <code class="inline-code">fbp</code>, in the case of Meta Pixel), which enable trackers to map online activity to user identities and behavioral profiles per <a href="https://www.facebook.com/privacy/policy/" class="doc-link" target="_blank" rel="noopener">official privacy policies</a>. In some cases, the trackers also perform <a href="https://petsymposium.org/popets/2024/popets-2024-0122.php" class="doc-link" target="_blank" rel="noopener">cookie syncing/server-side tracking</a> and collect user email hashes through the logging forms, allowing for persistent user tracking, targeting, and <a href="https://www.ftc.gov/policy/advocacy-research/tech-at-ftc/2024/07/no-hashing-still-doesnt-make-your-data-anonymous" class="doc-link" target="_blank" rel="noopener">reidentification</a>. <a href="#leakage-matrix" class="doc-link">Table 2</a> lists the PII and conversation leaks observed.</p>
         </div>
         <div class="finding-card amber">
-          <div class="finding-title">Finding 3 — Server-side Mirroring</div>
-          <p>[Placeholder] Several platforms use the Meta Conversions API, a server-to-server channel, meaning browser-level blocking tools cannot intercept these transmissions.</p>
-        </div>
-        <div class="finding-card purple">
-          <div class="finding-title">Finding 4 — Opt-out Ineffectiveness</div>
-          <p>[Placeholder] Disabling training data opt-outs, conversation history, and personalization settings had no measurable effect on third-party tracker activity.</p>
+          <div class="finding-title">Potentially misleading privacy controls and privacy disclosures</div>
+          <p>The studied LLMs offer privacy controls to limit conversations' visibility, but in some cases, they may mislead users by implying stronger protections than those which are actually enforced, potentially undermining the expected privacy guarantees. Furthermore, the privacy policies of <a href="https://web.archive.org/web/20260409172159/https://x.ai/legal/cookie-policy" class="doc-link" target="_blank" rel="noopener">Grok</a>, <a href="https://web.archive.org/web/20260406164032/https://www.perplexity.ai/hub/legal/privacy-policy" class="doc-link" target="_blank" rel="noopener">Perplexity</a>, <a href="https://openai.com/policies/cookie-policy/" class="doc-link" target="_blank" rel="noopener">OpenAI</a>, and <a href="https://privacy.claude.com/en/articles/10023541-what-cookies-does-anthropic-use" class="doc-link" target="_blank" rel="noopener">Claude</a> consistently confirm the collection of user conversations, usage telemetry, and metadata for first-party purposes, the use of third-party cookies (e.g., Meta, Google, TikTok) for analytics and advertising, and even data sharing with third parties. Yet, they do not clearly state that user conversations are shared with online advertising and tracking services, relying instead on broad and ambiguous language (e.g., <em>"content you submit"</em> or <em>"business partners"</em>) that leaves uncertainty about actual data flows. Cookie consent forms present transparency shortcomings about the cookies collected and their purposes as Fig 2 shows.</p>
         </div>
       </div>
+
+      <p class="findings-coda">Although preliminary, our findings reveal systemic weak privacy and security postures across LLM services. While we do not yet have evidence that conversations are read by trackers, permalink dissemination and by extension the capability to read them exist, and therefore the potential risk.</p>
+
     </div>
   </section>
 
-  <!-- ─── Affected Platforms ────────────────────────────────── -->
-  <section id="platforms">
+  <!-- ─── Privacy Impact ───────────────────────────────────── -->
+  <section id="impact">
     <div class="container">
-      <h2 class="section-heading">Tested Platforms</h2>
-      <p class="section-subtitle">Platforms and surfaces tested. Tracker badges show what was observed — to be updated with full findings.</p>
+      <h2 class="section-heading">Privacy Impact: Why does it matter?</h2>
 
-      <div class="platform-grid">
+      <p>Generative AI systems are rapidly reaching mass adoption. According to <a href="https://ec.europa.eu/eurostat/web/products-eurostat-news/w/ddn-20251216-3" class="doc-link" target="_blank" rel="noopener">Eurostat</a>, <strong>32.7% of the EU population (ages 16–74) used generative AI in 2025</strong>, primarily for personal purposes (25.1%), but also for work (15.1%), covering all sorts of professionals, and education (9.4%).</p>
+
+      <p>User conversations frequently contain sensitive information as users often perceive LLMs as trusted assistants. This perception increases the likelihood of oversharing sensitive information. Prior research shows that <a href="https://arxiv.org/abs/2407.11438" class="doc-link" target="_blank" rel="noopener">PII is disclosed to LLMs in unexpected contexts</a>, including sexual preferences, mental support or health conditions, which carries significant privacy risks. These privacy threats are aggravated by LLMs' ability to infer user attributes. These concerns extend at the enterprise and public sector level, where intellectual property and sensitive information can be disclosed, with direct national security implications. In 2023, <a href="https://www.forbes.com/sites/siladityaray/2023/05/02/samsung-bans-chatgpt-and-other-chatbots-for-employees-after-sensitive-code-leak/" class="doc-link" target="_blank" rel="noopener">Samsung banned ChatGPT internal usage</a> after employees leaked sensitive code and intellectual property to LLMs.</p>
+
+      <p>When conversation data is shared with <strong>third parties like Meta and Google along with cookies and other user identifiers like email hashes without sufficient user awareness and weak access control mechanisms</strong>, a new threat scenario arises. The observed practices also suggest that the <strong>data-driven business models of the traditional web (e.g., advertising, analytics) are being replicated in LLM ecosystems with limited oversight.</strong></p>
+
+    </div>
+  </section>
+
+  <!-- ─── Web Platforms ────────────────────────────────────── -->
+  <section id="web">
+    <div class="container">
+      <h2 class="section-heading">Web</h2>
+      <p class="section-subtitle">Findings from web browser sessions across the four tested LLM platforms.</p>
+
+      <div class="platform-grid" style="grid-template-columns: repeat(4, 1fr);">
 
         <div class="platform-card">
-          <div class="platform-name">Perplexity AI</div>
+          <div class="platform-name">Perplexity</div>
           <div class="platform-surfaces">
             <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Browser</span>
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Mobile</span>
           </div>
           <div class="tracker-pills">
-            <span class="pill pill-meta">Meta Pixel</span>
-            <span class="pill pill-meta">Conversions API</span>
-            <span class="pill pill-google">Google Ads</span>
-            <span class="pill pill-google">DoubleClick</span>
-            <span class="pill pill-firebase">Firebase</span>
+            <span class="pill pill-meta">Meta Pixel ✝</span>
+            <span class="pill pill-unknown" style="background:#fef9e7;color:#b45309;border:none;">Datadog</span>
+            <span class="pill pill-unknown" style="background:#f3f0ff;color:#6d28d9;border:none;">Singular</span>
           </div>
         </div>
 
         <div class="platform-card">
-          <div class="platform-name">ChatGPT</div>
+          <div class="platform-name">Claude (Anthropic)</div>
           <div class="platform-surfaces">
             <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>iOS</span>
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Android</span>
           </div>
           <div class="tracker-pills">
-            <span class="pill pill-unknown">TBD</span>
+            <span class="pill pill-meta">Meta Pixel</span>
+            <span class="pill pill-unknown" style="background:#e8f4fd;color:#0369a1;border:none;">Intercom</span>
+            <span class="pill pill-unknown" style="background:#fef9e7;color:#b45309;border:none;">Datadog</span>
+            <span class="pill pill-more">+8 server-side</span>
+          </div>
+        </div>
+
+        <div class="platform-card">
+          <div class="platform-name">ChatGPT (OpenAI)</div>
+          <div class="platform-surfaces">
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
+          </div>
+          <div class="tracker-pills">
+            <span class="pill pill-google">Google Analytics</span>
           </div>
         </div>
 
@@ -872,22 +1173,27 @@
           <div class="platform-name">Grok (xAI)</div>
           <div class="platform-surfaces">
             <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Android</span>
           </div>
           <div class="tracker-pills">
-            <span class="pill pill-unknown">TBD</span>
+            <span class="pill pill-google">Google Analytics</span>
+            <span class="pill pill-google">DoubleClick</span>
+            <span class="pill pill-unknown" style="background:#f0f0f0;color:#444;border:none;">TikTok</span>
+            <span class="pill pill-meta">Meta Pixel</span>
           </div>
         </div>
 
-        <div class="platform-card">
-          <div class="platform-name">Claude</div>
-          <div class="platform-surfaces">
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
-          </div>
-          <div class="tracker-pills">
-            <span class="pill pill-unknown">TBD</span>
-          </div>
-        </div>
+      </div>
+      <p style="margin-top:0.9rem;font-size:0.8rem;color:var(--muted);">✝ Perplexity discontinued Meta Pixel as of April 3rd, 2026, possibly in response to the US class action filing.</p>
+    </div>
+  </section>
+
+  <!-- ─── Browser Platforms ─────────────────────────────────── -->
+  <section id="browser">
+    <div class="container">
+      <h2 class="section-heading">Browser</h2>
+      <p class="section-subtitle">AI-native browsers that embed LLM functionality directly into the browsing experience.</p>
+
+      <div class="platform-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 560px;">
 
         <div class="platform-card">
           <div class="platform-name">Perplexity Comet</div>
@@ -895,7 +1201,7 @@
             <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Desktop Browser</span>
           </div>
           <div class="tracker-pills">
-            <span class="pill pill-unknown">TBD</span>
+            <span class="pill pill-unknown">Analysis in progress</span>
           </div>
         </div>
 
@@ -905,7 +1211,51 @@
             <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Mobile Browser</span>
           </div>
           <div class="tracker-pills">
-            <span class="pill pill-unknown">TBD</span>
+            <span class="pill pill-unknown">Analysis in progress</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Mobile Platforms ──────────────────────────────────── -->
+  <section id="mobile">
+    <div class="container">
+      <h2 class="section-heading">Mobile</h2>
+      <p class="section-subtitle">Native mobile applications for iOS and Android. Traffic intercepted via mitmproxy.</p>
+
+      <div class="platform-grid" style="grid-template-columns: repeat(3, 1fr); max-width: 740px;">
+
+        <div class="platform-card">
+          <div class="platform-name">Perplexity</div>
+          <div class="platform-surfaces">
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>iOS</span>
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Android</span>
+          </div>
+          <div class="tracker-pills">
+            <span class="pill pill-unknown">Analysis in progress</span>
+          </div>
+        </div>
+
+        <div class="platform-card">
+          <div class="platform-name">ChatGPT</div>
+          <div class="platform-surfaces">
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>iOS</span>
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Android</span>
+          </div>
+          <div class="tracker-pills">
+            <span class="pill pill-unknown">Analysis in progress</span>
+          </div>
+        </div>
+
+        <div class="platform-card">
+          <div class="platform-name">Grok</div>
+          <div class="platform-surfaces">
+            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Android</span>
+          </div>
+          <div class="tracker-pills">
+            <span class="pill pill-unknown">Analysis in progress</span>
           </div>
         </div>
 
@@ -1091,35 +1441,30 @@
     </div>
   </section>
 
-  <!-- ─── Example Payload ───────────────────────────────────── -->
+  <!-- ─── Figures ─────────────────────────────────────────── -->
   <section id="evidence">
     <div class="container">
-      <h2 class="section-heading">Evidence — Network Payload</h2>
-      <p class="section-subtitle">
-        Illustrative example of observed outbound request to Meta Pixel. Sensitive values redacted pending full disclosure.
-      </p>
 
-      <div class="payload-block">
-        <code>
-<span class="comment">// POST https://www.facebook.com/tr/ — captured during Perplexity search session</span>
-<span class="comment">// Standard test prompt: "What are the symptoms of liver cancer..."</span>
+      <figure class="research-figure">
+        <div class="figure-img-wrap" data-lightbox data-caption="<strong>Figure 1.</strong> Screenshot showing the leak of conversation permalinks to Meta on Perplexity (top left) and to Google Analytics on Grok (top right) along the title of the conversation which contains metadata about the conversion topic. Perplexity discontinued this feature after a class action was filed in the USA in April 2026. At the bottom, we show how the Grok permalink can be accessed from another browser in incognito mode without logging.">
+          <img src="assets/img/figure1.png" alt="Screenshot showing the leak of conversation permalinks to Meta on Perplexity and to Google Analytics on Grok" loading="lazy">
+        </div>
+        <figcaption>
+          <span class="fig-label">Figure 1.</span>
+          Screenshot showing the leak of conversation permalinks to Meta on Perplexity (top left) and to Google Analytics on Grok (top right) along the title of the conversation which contains metadata about the conversion topic. Perplexity discontinued this feature after a class action was filed in the USA in April 2026. At the bottom, we show how the Grok permalink can be accessed from another browser in incognito mode without logging.
+        </figcaption>
+      </figure>
 
-{
-  <span class="key">"event_name"</span>:       <span class="val">"PageView"</span>,
-  <span class="key">"event_time"</span>:       <span class="val">1743XXXXXXX</span>,
-  <span class="key">"user_data"</span>: {
-    <span class="key">"em"</span>:             <span class="redact">"[HASHED EMAIL]"</span>,
-    <span class="key">"fbc"</span>:            <span class="redact">"[FB CLICK ID]"</span>,
-    <span class="key">"client_ip_address"</span>: <span class="redact">"[USER IP]"</span>
-  },
-  <span class="key">"custom_data"</span>: {
-    <span class="key">"content_name"</span>:   <span class="redact">"[CONVERSATION TEXT — CONTAINS PROMPT]"</span>,
-    <span class="key">"search_string"</span>:  <span class="redact">"[HEALTH QUERY]"</span>
-  },
-  <span class="key">"action_source"</span>:    <span class="val">"website"</span>
-}
-        </code>
-      </div>
+      <figure class="research-figure">
+        <div class="figure-img-wrap" data-lightbox data-caption="<strong>Figure 2.</strong> Cookie consent forms for Claude, Grok (through OneTrust), ChatGPT, and Perplexity.">
+          <img src="assets/img/figure2.png" alt="Cookie consent forms for Claude, Grok (through OneTrust), ChatGPT, and Perplexity" loading="lazy">
+        </div>
+        <figcaption>
+          <span class="fig-label">Figure 2.</span>
+          Cookie consent forms for Claude, Grok (through OneTrust), ChatGPT, and Perplexity.
+        </figcaption>
+      </figure>
+
     </div>
   </section>
 
@@ -1343,24 +1688,61 @@
       <h2 class="section-heading">Researchers</h2>
       <p class="section-subtitle">Questions, responsible disclosure, or collaboration inquiries.</p>
 
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
-        <!-- Researcher card placeholder — duplicate as needed -->
-        <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1.2rem 1.4rem; background: #fff; min-width: 220px;">
-          <div style="font-size: 0.98rem; font-weight: 700; margin-bottom: 0.15rem;">[Researcher Name]</div>
-          <div style="font-size: 0.82rem; color: var(--muted); margin-bottom: 0.6rem;">[Affiliation]</div>
-          <a href="mailto:placeholder@example.com" style="font-size: 0.82rem;">placeholder@example.com</a>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem; margin-top: 2rem;">
+
+        <div class="researcher-card">
+          <div class="researcher-avatar">AG</div>
+          <div class="researcher-name">Dr. Aniketh Girish</div>
+          <div class="researcher-affil">IMDEA Networks</div>
+          <a href="mailto:aniketh.girish@networks.imdea.org" class="researcher-email">aniketh.girish@networks.imdea.org</a>
         </div>
-        <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1.2rem 1.4rem; background: #fff; min-width: 220px;">
-          <div style="font-size: 0.98rem; font-weight: 700; margin-bottom: 0.15rem;">[Researcher Name]</div>
-          <div style="font-size: 0.82rem; color: var(--muted); margin-bottom: 0.6rem;">[Affiliation]</div>
-          <a href="mailto:placeholder@example.com" style="font-size: 0.82rem;">placeholder@example.com</a>
+
+        <div class="researcher-card">
+          <div class="researcher-avatar">GO</div>
+          <div class="researcher-name">Guilherme Oliveira</div>
+          <div class="researcher-affil">IMDEA Networks</div>
+          <a href="mailto:guilherme.oliveira@networks.imdea.org" class="researcher-email">guilherme.oliveira@networks.imdea.org</a>
         </div>
+
+        <div class="researcher-card">
+          <div class="researcher-avatar">GS</div>
+          <div class="researcher-name">Prof. Guillermo Suarez-Tangil</div>
+          <div class="researcher-affil">IMDEA Networks</div>
+          <a href="mailto:guillermo.suarez-tangil@imdea.org" class="researcher-email">guillermo.suarez-tangil@imdea.org</a>
+        </div>
+
+        <div class="researcher-card">
+          <div class="researcher-avatar">JG</div>
+          <div class="researcher-name">Jorge García Herrero</div>
+          <div class="researcher-affil">Lawyer &amp; DPO</div>
+          <a href="mailto:jgh@jorgegarciaherrero.com" class="researcher-email">jgh@jorgegarciaherrero.com</a>
+        </div>
+
+        <div class="researcher-card">
+          <div class="researcher-avatar">MS</div>
+          <div class="researcher-name">Miguel Sanchez</div>
+          <div class="researcher-affil">IMDEA Networks / UC3M</div>
+          <a href="mailto:miguel.sanchez@networks.imdea.org" class="researcher-email">miguel.sanchez@networks.imdea.org</a>
+        </div>
+
+        <div class="researcher-card">
+          <div class="researcher-avatar">NV</div>
+          <div class="researcher-name">Prof. Narseo Vallina-Rodriguez</div>
+          <div class="researcher-affil">IMDEA Networks / AppCensus</div>
+          <a href="mailto:narseo.vallina@imdea.org" class="researcher-email">narseo.vallina@imdea.org</a>
+        </div>
+
+        <div class="researcher-card">
+          <div class="researcher-avatar">TJ</div>
+          <div class="researcher-name">Tautvydas Jackevičius</div>
+          <div class="researcher-affil">IMDEA Networks</div>
+          <a href="mailto:tautvydas.jackevicius@networks.imdea.org" class="researcher-email">tautvydas.jackevicius@networks.imdea.org</a>
+        </div>
+
       </div>
 
-      <div style="margin-top: 1.5rem; font-size: 0.88rem; color: var(--muted-dark);">
-        For responsible disclosure or security concerns, please email us directly.
-        For press inquiries, see the paper or contact the corresponding author.
-      </div>
+      <p style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--muted);">For responsible disclosure, press, or collaboration inquiries, email us directly or contact the corresponding author.</p>
+
     </div>
   </section>
 
@@ -1384,8 +1766,41 @@
     </div>
   </footer>
 
+  <!-- ─── Lightbox ──────────────────────────────────────────── -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close">✕</button>
+    <div class="lightbox-inner">
+      <img id="lightbox-img" src="" alt="">
+      <p class="lightbox-caption" id="lightbox-caption"></p>
+    </div>
+  </div>
+
   <!-- ─── Scripts ───────────────────────────────────────────── -->
   <script>
+    // Lightbox
+    const lightbox     = document.getElementById('lightbox');
+    const lbImg        = document.getElementById('lightbox-img');
+    const lbCaption    = document.getElementById('lightbox-caption');
+
+    document.querySelectorAll('[data-lightbox]').forEach(wrap => {
+      wrap.addEventListener('click', () => {
+        lbImg.src = wrap.querySelector('img').src;
+        lbImg.alt = wrap.querySelector('img').alt;
+        lbCaption.innerHTML = wrap.dataset.caption || '';
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
     // Highlight active nav link on scroll
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-links a');
