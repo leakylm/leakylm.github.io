@@ -61,21 +61,43 @@ const countObserver = new IntersectionObserver((entries) => {
 
 statNumbers.forEach(el => countObserver.observe(el));
 
-/* ─── DataTables ────────────────────────────────────────────── */
-$(document).ready(function () {
-  $('#matrix-table').DataTable({
-    paging: false,
-    searching: false,
-    info: false,
-    order: [],
-    columnDefs: [{ orderable: false, targets: [3, 4, 5, 6, 7] }]
+/* ─── Expanding Matrix Rows ─────────────────────────────────── */
+function makeExpandable(tableSelector, btnId) {
+  const rows = document.querySelectorAll(`${tableSelector} tr.matrix-row`);
+  const btn  = document.getElementById(btnId);
+
+  function sync() {
+    const anyCollapsed = [...rows].some(r => document.getElementById(r.dataset.detail).hidden);
+    btn.textContent = anyCollapsed ? 'Expand all' : 'Collapse all';
+  }
+
+  rows.forEach(row => {
+    row.addEventListener('click', () => {
+      const detail = document.getElementById(row.dataset.detail);
+      detail.hidden = !detail.hidden;
+      row.classList.toggle('row-open', !detail.hidden);
+      sync();
+    });
   });
 
-  $('#conditions-table').DataTable({
-    paging: false,
-    searching: false,
-    info: false,
-    order: [],
-    columnDefs: [{ orderable: false, targets: [1, 2, 3, 4] }]
+  btn.addEventListener('click', () => {
+    const anyCollapsed = [...rows].some(r => document.getElementById(r.dataset.detail).hidden);
+    rows.forEach(row => {
+      const detail = document.getElementById(row.dataset.detail);
+      detail.hidden = !anyCollapsed;
+      row.classList.toggle('row-open', anyCollapsed);
+    });
+    btn.textContent = anyCollapsed ? 'Collapse all' : 'Expand all';
+  });
+}
+
+makeExpandable('#table-pii', 'btn-expand-all');
+
+/* single expandable row in access control table — no toolbar needed */
+document.querySelectorAll('#table-access tr.matrix-row').forEach(row => {
+  row.addEventListener('click', () => {
+    const detail = document.getElementById(row.dataset.detail);
+    detail.hidden = !detail.hidden;
+    row.classList.toggle('row-open', !detail.hidden);
   });
 });
