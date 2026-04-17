@@ -1,889 +1,1364 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Research disclosure: AI assistants leak your conversations to third-party trackers including Meta, Google, and others.">
-  <title>LeakyLM — AI Assistants Are Leaking Your Conversations</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link href="./css/datatables.css" rel="stylesheet">
-  <link href="./css/style.css" rel="stylesheet">
-  <script src="./js/jquery_3.7.1.min.js"></script>
-  <script src="./js/jquery.dataTables.min.js"></script>
-</head>
-<body>
-
-  <!-- ─── Navigation ─────────────────────────────────────────── -->
-  <nav class="site-nav" id="site-nav">
-    <div class="nav-inner">
-      <a href="#" class="site-title"><span style="color:var(--brand);">L</span>eaky<span style="color:var(--brand);">LM</span></a>
-      <div class="nav-links" id="nav-links">
-        <a href="#findings">Findings</a>
-        <a href="#permalink-visibility">Access Control</a>
-        <a href="#leakage-matrix">Leakage Matrix</a>
-        <a href="#methodology">Methodology</a>
-        <span class="nav-divider"></span>
-        <a href="#web">Web</a>
-        <a href="#browser">Browser</a>
-        <a href="#mobile">Mobile</a>
-        <span class="nav-divider"></span>
-        <a href="#disclosure">Disclosure</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contact</a>
-      </div>
-      <div class="nav-ext">
-        <a href="#paper">Read Paper</a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- ─── Hero ───────────────────────────────────────────────── -->
-  <section class="hero" id="intro">
-    <div class="container">
-      <div class="hero-eyebrow">
-        <span class="dot"></span>
-        Research Disclosure
-      </div>
-      <div class="hero-body">
-        <div class="hero-text">
-          <h1>Your AI Assistant Is <em>Leaking</em> Your Conversations</h1>
-          <p class="hero-lead">
-            We disclose structural privacy risks in prominent generative AI products — Perplexity, Anthropic's Claude,
-            xAI's Grok, and OpenAI's ChatGPT — caused by third-party trackers embedded in LLM services that
-            leak user conversations, identities, and sensitive metadata.
-          </p>
-          <div class="hero-actions">
-            <a href="#leakage-matrix" class="btn btn-primary">See the Evidence</a>
-            <a href="#paper" class="btn btn-outline">Read the Paper</a>
-            <a href="#methodology" class="btn btn-neutral">Methodology</a>
-          </div>
-        </div>
-
-        <div class="hero-stats">
-          <div class="stat-cell">
-            <span class="stat-number" data-count="4">4</span>
-            <span class="stat-label">AI Platforms Tested</span>
-          </div>
-          <div class="stat-cell">
-            <span class="stat-number" data-count="13">13+</span>
-            <span class="stat-label">Third-party Trackers Found</span>
-          </div>
-          <div class="stat-cell">
-            <span class="stat-number" data-count="4">4</span>
-            <span class="stat-label">Platforms Affected</span>
-          </div>
-          <div class="stat-cell">
-            <span class="stat-number" data-count="0">0</span>
-            <span class="stat-label">Disclosed to Users</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── Callouts ────────────────────────────────────────── -->
-  <div class="hero-callouts">
-    <div class="container">
-      <div class="callout callout-success">
-        <div class="callout-title">Update — [Date]</div>
-        [Platform] has removed the [tracker] script following responsible disclosure.
-      </div>
-      <div class="callout callout-info">
-        <div class="callout-title">Paper Accepted — [Venue]</div>
-        Our peer-reviewed paper "<em>[Title]</em>" has been accepted to [Conference].
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── Description ──────────────────────────────────────── -->
-  <section id="description">
-    <div class="container">
-      <p style="font-size: 1rem; line-height: 1.8; color: var(--text); margin-bottom: 1.25em;">
-        Generative AI is rapidly becoming a foundational layer of the Internet, enabling the emergence of
-        agentic systems that mediate users' interaction with digital services. Despite this transformation,
-        underlying data-driven economic dynamics remain largely unchanged, as acknowledged by prominent
-        <a href="https://www.criteo.com" class="doc-link" target="_blank" rel="noopener">industry actors</a>. This continuity extends to the integration of third-party trackers within generative AI
-        ecosystems to monitor users' actions, which retain the capability to collect sensitive user data.
-      </p>
-      <p style="font-size: 1rem; line-height: 1.8; color: var(--text); margin-bottom: 0;">
-        In this report, we disclose concerning structural privacy risks caused by (1) the systematic introduction
-        of third-party analytics services in prominent generative AI products developed by major AI actors
-        such as Perplexity, Anthropic's Claude, xAI's Grok, and OpenAI's ChatGPT; and (2) insecure access
-        control mechanisms in some of these LLMs that leak user conversations to third-party trackers
-        embedded in LLM services, as well as the conversation title which can be a very sensitive data type
-        that can disclose users' concerns, conversation topics, interests, and more. Meta's AI, MS Copilot,
-        and Google Gemini are out of scope of this analysis because they act both as LLM providers and
-        third-party trackers, falling into a different threat model. We plan to extend the scope of our analysis
-        to include these products in the coming weeks.
-      </p>
-    </div>
-  </section>
-
-
-  <!-- ─── Key Findings ──────────────────────────────────────── -->
-  <section id="findings">
-    <div class="container">
-      <h2 class="section-heading">Key privacy concerning observations</h2>
-
-      <div class="three-col">
-        <div class="finding-card">
-          <div class="finding-title">Leakage of conversation URLs to third-party advertising and tracking services</div>
-          <p>User conversations in LLM services frequently contain sensitive information introduced by end users. Yet, conversation URLs are disclosed to third-party trackers such as the Meta Pixel, as shown in Figure 1 by default, for Grok and Perplexity. These URLs often serve as publicly available <a href="https://en.wikipedia.org/wiki/Permalink" class="doc-link" target="_blank" rel="noopener">permalinks</a> with weak access control, making them accessible by default to anyone knowing the URL. This potentially allows the trackers to access user conversations and their content. <a href="#permalink-visibility" class="doc-link">Table 1</a> describes the default access control mechanisms across LLMs.</p>
-        </div>
-        <div class="finding-card blue">
-          <div class="finding-title">Linkability to user identities</div>
-          <p>Conversation URLs are frequently shared by LLM providers alongside tracking identifiers to third-party trackers (e.g., cookies such as <code class="inline-code">fbp</code>, in the case of Meta Pixel), which enable trackers to map online activity to user identities and behavioral profiles per <a href="https://www.facebook.com/privacy/policy/" class="doc-link" target="_blank" rel="noopener">official privacy policies</a>. In some cases, the trackers also perform <a href="https://petsymposium.org/popets/2024/popets-2024-0122.php" class="doc-link" target="_blank" rel="noopener">cookie syncing/server-side tracking</a> and collect user email hashes through the logging forms, allowing for persistent user tracking, targeting, and <a href="https://www.ftc.gov/policy/advocacy-research/tech-at-ftc/2024/07/no-hashing-still-doesnt-make-your-data-anonymous" class="doc-link" target="_blank" rel="noopener">reidentification</a>. <a href="#leakage-matrix" class="doc-link">Table 2</a> lists the PII and conversation leaks observed.</p>
-        </div>
-        <div class="finding-card amber">
-          <div class="finding-title">Potentially misleading privacy controls and privacy disclosures</div>
-          <p>The studied LLMs offer privacy controls to limit conversations' visibility, but in some cases, they may mislead users by implying stronger protections than those which are actually enforced, potentially undermining the expected privacy guarantees. Furthermore, the privacy policies of <a href="https://web.archive.org/web/20260409172159/https://x.ai/legal/cookie-policy" class="doc-link" target="_blank" rel="noopener">Grok</a>, <a href="https://web.archive.org/web/20260406164032/https://www.perplexity.ai/hub/legal/privacy-policy" class="doc-link" target="_blank" rel="noopener">Perplexity</a>, <a href="https://openai.com/policies/cookie-policy/" class="doc-link" target="_blank" rel="noopener">OpenAI</a>, and <a href="https://privacy.claude.com/en/articles/10023541-what-cookies-does-anthropic-use" class="doc-link" target="_blank" rel="noopener">Claude</a> consistently confirm the collection of user conversations, usage telemetry, and metadata for first-party purposes, the use of third-party cookies (e.g., Meta, Google, TikTok) for analytics and advertising, and even data sharing with third parties. Yet, they do not clearly state that user conversations are shared with online advertising and tracking services, relying instead on broad and ambiguous language (e.g., <em>"content you submit"</em> or <em>"business partners"</em>) that leaves uncertainty about actual data flows. Cookie consent forms present transparency shortcomings about the cookies collected and their purposes as Fig 2 shows.</p>
-        </div>
-      </div>
-
-      <p class="findings-coda">Although preliminary, our findings reveal systemic weak privacy and security postures across LLM services. While we do not yet have evidence that conversations are read by trackers, permalink dissemination and by extension the capability to read them exist, and therefore the potential risk.</p>
-
-    </div>
-  </section>
-
-  <!-- ─── Privacy Impact ───────────────────────────────────── -->
-  <section id="impact">
-    <div class="container">
-      <h2 class="section-heading">Privacy Impact: Why does it matter?</h2>
-
-      <p>Generative AI systems are rapidly reaching mass adoption. According to <a href="https://ec.europa.eu/eurostat/web/products-eurostat-news/w/ddn-20251216-3" class="doc-link" target="_blank" rel="noopener">Eurostat</a>, <strong>32.7% of the EU population (ages 16–74) used generative AI in 2025</strong>, primarily for personal purposes (25.1%), but also for work (15.1%), covering all sorts of professionals, and education (9.4%).</p>
-
-      <p>User conversations frequently contain sensitive information as users often perceive LLMs as trusted assistants. This perception increases the likelihood of oversharing sensitive information. Prior research shows that <a href="https://arxiv.org/abs/2407.11438" class="doc-link" target="_blank" rel="noopener">PII is disclosed to LLMs in unexpected contexts</a>, including sexual preferences, mental support or health conditions, which carries significant privacy risks. These privacy threats are aggravated by LLMs' ability to infer user attributes. These concerns extend at the enterprise and public sector level, where intellectual property and sensitive information can be disclosed, with direct national security implications. In 2023, <a href="https://www.forbes.com/sites/siladityaray/2023/05/02/samsung-bans-chatgpt-and-other-chatbots-for-employees-after-sensitive-code-leak/" class="doc-link" target="_blank" rel="noopener">Samsung banned ChatGPT internal usage</a> after employees leaked sensitive code and intellectual property to LLMs.</p>
-
-      <p>When conversation data is shared with <strong>third parties like Meta and Google along with cookies and other user identifiers like email hashes without sufficient user awareness and weak access control mechanisms</strong>, a new threat scenario arises. The observed practices also suggest that the <strong>data-driven business models of the traditional web (e.g., advertising, analytics) are being replicated in LLM ecosystems with limited oversight.</strong></p>
-
-    </div>
-  </section>
-
-  <!-- ─── Permalink Visibility ─────────────────────────────── -->
-  <section id="permalink-visibility">
-    <div class="container">
-      <h2 class="section-heading">Access Control</h2>
-      <p class="section-subtitle">Table 1. Default permalink access control mechanisms and visibility across tiers.</p>
-
-      <p style="font-size:0.82rem; color:var(--muted); margin-bottom:0.8rem;">Click the Perplexity row to expand notes.</p>
-      <div class="table-wrap">
-        <table class="matrix" id="table-access">
-          <thead>
-            <tr>
-              <th>Provider</th>
-              <th>Guest tier</th>
-              <th>Free tier</th>
-              <th>Paid tier</th>
-              <th>Privacy controls</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="matrix-row" data-detail="a1">
-              <td class="platform-col">Perplexity</td>
-              <td>Permalinks are fully accessible without login.</td>
-              <td>Permalinks are only visible to owners unless explicitly shared.</td>
-              <td>Supports incognito chats in free and premium tiers. They won't be saved in the account's history. Yet, users can share them.</td>
-              <td>Users can choose one of three settings: <em>Private</em>, <em>Whitelist</em> (only allowed people), and <em>Everyone</em>. If shared with everyone, the chat link is the same as the permalink.</td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="a1" hidden>
-              <td colspan="6"><div class="detail-row-body">
-                Permalink doesn't disclose private conversations by default. In shared incognito chats, once users leave incognito mode, they will not be able to unshare the conversation.
-              </div></td>
-            </tr>
-            <tr>
-              <td class="platform-col">Anthropic Claude.ai</td>
-              <td style="color:var(--muted);">Not supported.</td>
-              <td>Permalinks are only visible to owners unless explicitly shared.</td>
-              <td>Implements <a href="https://claude.ai/settings/data-privacy-controls" class="doc-link" target="_blank" rel="noopener">access control mechanisms</a> for sharing conversations with others.</td>
-              <td>—</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="platform-col">OpenAI ChatGPT</td>
-              <td>Conversation permalinks are only visible to owners unless explicitly shared.</td>
-              <td>Conversation permalinks are only visible to owners unless explicitly shared.</td>
-              <td>Offers <a href="https://web.archive.org/web/20260412141831/https://openai.com/consumer-privacy/" class="doc-link" target="_blank" rel="noopener">access control</a> for sharing conversations with others.</td>
-              <td>—</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="platform-col">xAI Grok</td>
-              <td>Accessible by default. Guest chats are always public.</td>
-              <td>Allows for the creation of incognito chats, as in Perplexity's case.</td>
-              <td>Conversations are accessible by default, yet users can restrict access (opt-out).</td>
-              <td>If the link has already been shared before changing visibility settings, the conversation remains accessible unless users revoke access explicitly at the chat level.</td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── Leakage Matrix ────────────────────────────────────── -->
-  <section id="leakage-matrix">
-    <div class="container">
-      <h2 class="section-heading">Leakage Matrix</h2>
-      <p class="section-subtitle">Table 2. Summary of PII and conversation/prompt dissemination to third parties.</p>
-
-      <div class="matrix-toolbar">
-        <p style="font-size:0.82rem; color:var(--muted); margin:0;">Click any row to expand technical details.</p>
-        <button id="btn-expand-all" class="btn-expand-all">Expand all</button>
-      </div>
-      <div class="table-wrap">
-        <table class="matrix" id="table-pii">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Third party</th>
-              <th>Data leaked</th>
-              <th>Fires when</th>
-              <th style="width:32px;"></th>
-            </tr>
-          </thead>
-          <tbody>
-
-            <tr class="matrix-row" data-detail="d1">
-              <td class="platform-col">Perplexity</td>
-              <td><span class="pill pill-meta">Meta</span></td>
-              <td><code class="inline-code">fbp</code> cookie, conversation URL</td>
-              <td><span class="leak-tag leak-discontinued">Discontinued Apr 2026</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d1" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                Discontinued as of April 3rd, 2026, possibly in response to <a href="https://cdn.arstechnica.net/wp-content/uploads/2026/04/Doe-v-Perplexity-Complaint-3-31-26.pdf" class="doc-link" target="_blank" rel="noopener">US class action</a>.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d2">
-              <td class="platform-col">Perplexity</td>
-              <td><span class="pill pill-unknown">Datadog</span></td>
-              <td>Email address (raw), conversation URL, metadata (timezone, device ID)</td>
-              <td><span class="leak-tag leak-always">Always</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d2" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                The URL encodes the text of the first query of the chat (i.e., <code class="inline-code">perplexity.ai/search/QUERY-slug</code>, limited to ~30 chars), disclosing the intent of the conversation. The slug can be sufficient to access the conversation. User email is also disclosed during interaction, not only in registration forms.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d3">
-              <td class="platform-col">Perplexity</td>
-              <td><span class="pill pill-unknown">Singular</span></td>
-              <td>Email hash, OS and browser metadata</td>
-              <td><span class="leak-tag leak-always">Always</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d3" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                User email hash is also disclosed when users interact with the service, not only in registration forms.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d4">
-              <td class="platform-col">Anthropic Claude.ai</td>
-              <td><span class="pill pill-meta">Meta</span></td>
-              <td><code class="inline-code">fbp</code> cookie and browser metadata</td>
-              <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d4" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                The <a href="https://www.facebook.com/privacy/policy/version/5407378522724295/" class="doc-link" target="_blank" rel="noopener">Meta Pixel</a> loads <code class="inline-code">fbevents.js</code> client-side inside a sandboxed iframe at <code class="inline-code">a.claude.ai</code>, setting a <code class="inline-code">_fbp</code> persistence cookie. In parallel, the same event is forwarded server-side to Facebook Conversions API. Both transmissions share the same Segment <code class="inline-code">anonymousId</code>, potentially allowing Meta to join client-side and server-side events under a single user identity. Blocking the client-side pixel does not prevent Meta from receiving the event via the server-side channel. When non-essential cookies are rejected, the <code class="inline-code">_fbp</code> cookie is not set and the server-side container forwarding events to the Conversions API is not observed.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d5">
-              <td class="platform-col">Anthropic Claude.ai</td>
-              <td><span class="pill pill-unknown">Intercom</span></td>
-              <td>Email addresses and conversation URL</td>
-              <td><span class="leak-tag leak-always">Always (authenticated)</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d5" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                A persistent WebSocket to <code class="inline-code">nexus-websocket-a.intercom.io</code> sends the current page URL every ~2 min., giving Intercom a timestamped log of every conversation the user visits — sufficient to identify and access the specific conversation. This flow fires unconditionally on every authenticated session. Disclosing email, name, subscription tier, and organisation UUID to a third party in sessions where the support widget is never opened may infringe the data minimisation principle under Article 5 GDPR.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d6">
-              <td class="platform-col">Anthropic Claude.ai</td>
-              <td><span class="pill pill-unknown">Datadog</span></td>
-              <td>User anonymous ID, viewport data, page URL (with chat GUID), usage statistics and metadata</td>
-              <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d6" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                Only observed when accepting non-essential cookies.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d7">
-              <td class="platform-col">Anthropic Claude.ai</td>
-              <td><span class="pill pill-unknown" style="background:#f3f0ff;color:#6d28d9;">Server-side ×11</span></td>
-              <td>User email, account UUID, subscription plan, page URL (incl. conversation UUID), <a href="https://segment.com/docs/connections/spec/common" class="doc-link" target="_blank" rel="noopener">Segment</a> <code class="inline-code">anonymousId</code>, <a href="https://amplitude.com/docs/data/sources/instrument-track-sessions" class="doc-link" target="_blank" rel="noopener">Amplitude</a> session ID, country</td>
-              <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d7" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                Claude uses Segment analytics fetching its configuration from <code class="inline-code">a-cdn.anthropic.com</code> (first-party), which includes the Facebook Pixel PII config. Anthropic explicitly whitelists <code class="inline-code">email</code>, <code class="inline-code">userAgent</code>, and <code class="inline-code">country</code>; and blocklists conversation title, <code class="inline-code">account_uuid</code>, <code class="inline-code">organization_uuid</code>, <code class="inline-code">billing_type</code>, <code class="inline-code">surface</code>, and <code class="inline-code">version</code>. Proxying through a first-party domain means hostname-based ad blockers targeting <code class="inline-code">api.segment.io</code> will not intercept this traffic.
-                <br><br>
-                We observe that Claude forwards user events server-to-server from Anthropic's infrastructure to eleven trackers with conversion APIs: Facebook Conversions API, LinkedIn Conversions API, TikTok Conversions API, Reddit Conversions API, Google Enhanced Conversions, Amplitude, Iterable, HubSpot, Pinterest Conversions API, Podscribe, and DCM Floodlight. As this forwarding occurs server-to-server, it evades ad blockers. Each forwarded event carries two shared identifiers that enable ID bridging, so user activities on Claude may be linkable across advertising platforms to a single Amplitude session without the user's knowledge or consent. If these cookies are eventually bridged with email hashes, it can facilitate user re-identification and de-anonymization. Only triggered when users accept non-essential cookies.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d8">
-              <td class="platform-col">OpenAI ChatGPT</td>
-              <td><span class="pill pill-google">Google Analytics</span></td>
-              <td>Conversation URL, page title (chat topic)</td>
-              <td><span class="leak-tag leak-always">Always (free logged-in)</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d8" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                The chat topic title is transmitted via the <code class="inline-code">dt</code> parameter to Google Analytics, alongside the full conversation URL in the <code class="inline-code">dl</code> parameter. This leak only occurs for free logged-in users, regardless of whether they accept or reject cookies.
-                <br><br>
-                ChatGPT's Content-Security-Policy header explicitly whitelists numerous third-party ad and analytics domains (Facebook, TikTok, Google, LinkedIn, Bing, Reddit), confirming the tracking infrastructure is in place. However, none were observed firing in our experiments — activation may depend on account type, geography, A/B test cohort, or server-side tracking.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d9">
-              <td class="platform-col">xAI Grok</td>
-              <td><span class="pill pill-google">Google Analytics &amp; Doubleclick</span></td>
-              <td>Conversation URL, page title, metadata</td>
-              <td><span class="leak-tag leak-always">Always</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d9" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                The chat topic title is transmitted via the <code class="inline-code">dt</code> parameter to Google Analytics and the <code class="inline-code">tab</code> parameter to Google Ads (DoubleClick), alongside the full conversation URL. The connection to Google Analytics occurs in all circumstances, regardless of users' cookie consent on OneTrust's forms.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d10">
-              <td class="platform-col">xAI Grok</td>
-              <td><span class="pill pill-unknown"><a href="https://ads.tiktok.com/help/article/tiktok-pixel" class="doc-link" target="_blank" rel="noopener">TikTok</a></span></td>
-              <td>Hashed email, conversation URL, page title, <code class="inline-code">ttp</code> cookie</td>
-              <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d10" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                <code class="inline-code">context.page.url</code> contains the full conversation URL; <code class="inline-code">auto_collected_properties.content_data.meta</code> contains the chat topic title. TikTok collects email hash on account login page and maps it to TikTok cookies. Connection only occurs after accepting non-essential cookies.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d11">
-              <td class="platform-col">xAI Grok</td>
-              <td><span class="pill pill-meta">Meta</span></td>
-              <td>Conversation URL (incl. conversation UUID), page title, <code class="inline-code">fbp</code> cookie</td>
-              <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d11" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                Every URL change triggers a PageView event. Connection only occurs after accepting non-essential cookies.
-              </div></td>
-            </tr>
-
-            <tr class="matrix-row" data-detail="d12">
-              <td class="platform-col">xAI Grok</td>
-              <td><span class="pill pill-unknown" style="background:#f3f0ff;color:#6d28d9;">Server-side GTM</span></td>
-              <td>Conversation URL, page title, <code class="inline-code">_fbp</code>, <code class="inline-code">_ttp</code> cookies</td>
-              <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
-              <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
-            </tr>
-            <tr class="detail-row" id="d12" hidden>
-              <td colspan="5"><div class="detail-row-body">
-                <code class="inline-code">grok.com</code> embeds a Google Tag Manager container (<code class="inline-code">GTM-TBL6BD7W</code>) configured to route events through a server-side GTM (sGTM) instance. A custom event <code class="inline-code">sent_3_chat_messages</code> fires after 3 messages in a session, transmitting the full conversation URL (<code class="inline-code">page_location</code>) and chat topic title to sGTM. sGTM then forwards this event server-to-server to Meta Conversions API and TikTok Events API — invisible to the browser and not blockable by ad blockers or privacy controls. The same payload carries both Meta's <code class="inline-code">fbp</code> and TikTok's <code class="inline-code">ttp</code> cookies, enabling ID bridging between Facebook and TikTok under a single user identity. Only occurs after accepting non-essential cookies.
-              </div></td>
-            </tr>
-
-          </tbody>
-        </table>
-      </div>
-
-      <p style="margin-top:1.5rem; font-size:0.82rem; color:var(--muted);">
-        Full dataset and HAR files will be released alongside the paper.
-        <a href="#methodology">See methodology</a> for experimental conditions.
-      </p>
-    </div>
-  </section>
-
-
-
-  <!-- ─── Web Platforms ────────────────────────────────────── -->
-  <section id="web">
-    <div class="container">
-      <h2 class="section-heading">Web</h2>
-      <p class="section-subtitle">Findings from web browser sessions across the four tested LLM platforms.</p>
-
-      <div class="web-layout">
-        <div class="web-main">
-          <div class="platform-grid" style="grid-template-columns: repeat(2, 1fr);">
-
-            <div class="platform-card">
-              <div class="platform-name">Perplexity</div>
-              <div class="platform-surfaces">
-                <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
-              </div>
-              <div class="tracker-pills">
-                <span class="pill pill-meta">Meta Pixel ✝</span>
-                <span class="pill pill-unknown" style="background:#fef9e7;color:#b45309;border:none;">Datadog</span>
-                <span class="pill pill-unknown" style="background:#f3f0ff;color:#6d28d9;border:none;">Singular</span>
-              </div>
-            </div>
-
-            <div class="platform-card">
-              <div class="platform-name">Claude (Anthropic)</div>
-              <div class="platform-surfaces">
-                <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
-              </div>
-              <div class="tracker-pills">
-                <span class="pill pill-meta">Meta Pixel</span>
-                <span class="pill pill-unknown" style="background:#e8f4fd;color:#0369a1;border:none;">Intercom</span>
-                <span class="pill pill-unknown" style="background:#fef9e7;color:#b45309;border:none;">Datadog</span>
-                <span class="pill pill-more">+8 server-side</span>
-              </div>
-            </div>
-
-            <div class="platform-card">
-              <div class="platform-name">ChatGPT (OpenAI)</div>
-              <div class="platform-surfaces">
-                <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
-              </div>
-              <div class="tracker-pills">
-                <span class="pill pill-google">Google Analytics</span>
-              </div>
-            </div>
-
-            <div class="platform-card">
-              <div class="platform-name">Grok (xAI)</div>
-              <div class="platform-surfaces">
-                <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Web</span>
-              </div>
-              <div class="tracker-pills">
-                <span class="pill pill-google">Google Analytics</span>
-                <span class="pill pill-google">DoubleClick</span>
-                <span class="pill pill-unknown" style="background:#f0f0f0;color:#444;border:none;">TikTok</span>
-                <span class="pill pill-meta">Meta Pixel</span>
-              </div>
-            </div>
-
-          </div>
-          <p style="margin-top:0.9rem;font-size:0.8rem;color:var(--muted);">✝ Perplexity discontinued Meta Pixel as of April 3rd, 2026, possibly in response to the US class action filing.</p>
-        </div>
-
-        <div class="web-figures">
-          <figure class="research-figure research-figure--small">
-            <div class="figure-img-wrap" data-lightbox data-caption="<strong>Figure 1.</strong> Screenshot showing the leak of conversation permalinks to Meta on Perplexity (top left) and to Google Analytics on Grok (top right) along the title of the conversation which contains metadata about the conversion topic. Perplexity discontinued this feature after a class action was filed in the USA in April 2026. At the bottom, we show how the Grok permalink can be accessed from another browser in incognito mode without logging.">
-              <img src="assets/img/figure1.png" alt="Figure 1: leak of conversation permalinks to Meta and Google Analytics" loading="lazy">
-            </div>
-            <figcaption><span class="fig-label">Fig. 1</span> Permalink leakage to Meta (Perplexity) and Google Analytics (Grok).</figcaption>
-          </figure>
-          <figure class="research-figure research-figure--small">
-            <div class="figure-img-wrap" data-lightbox data-caption="<strong>Figure 2.</strong> Cookie consent forms for Claude, Grok (through OneTrust), ChatGPT, and Perplexity.">
-              <img src="assets/img/figure2.png" alt="Figure 2: Cookie consent forms" loading="lazy">
-            </div>
-            <figcaption><span class="fig-label">Fig. 2</span> Cookie consent forms across platforms.</figcaption>
-          </figure>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── Browser Platforms ─────────────────────────────────── -->
-  <section id="browser">
-    <div class="container">
-      <h2 class="section-heading">Browser</h2>
-      <p class="section-subtitle">AI-native browsers that embed LLM functionality directly into the browsing experience.</p>
-
-      <div class="platform-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 560px;">
-
-        <div class="platform-card">
-          <div class="platform-name">Perplexity Comet</div>
-          <div class="platform-surfaces">
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Desktop Browser</span>
-          </div>
-          <div class="tracker-pills">
-            <span class="pill pill-unknown">Analysis in progress</span>
-          </div>
-        </div>
-
-        <div class="platform-card">
-          <div class="platform-name">Atlas Browser</div>
-          <div class="platform-surfaces">
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Mobile Browser</span>
-          </div>
-          <div class="tracker-pills">
-            <span class="pill pill-unknown">Analysis in progress</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── Mobile Platforms ──────────────────────────────────── -->
-  <section id="mobile">
-    <div class="container">
-      <h2 class="section-heading">Mobile</h2>
-      <p class="section-subtitle">Native mobile applications for iOS and Android. Traffic intercepted via mitmproxy.</p>
-
-      <div class="platform-grid" style="grid-template-columns: repeat(3, 1fr); max-width: 740px;">
-
-        <div class="platform-card">
-          <div class="platform-name">Perplexity</div>
-          <div class="platform-surfaces">
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>iOS</span>
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Android</span>
-          </div>
-          <div class="tracker-pills">
-            <span class="pill pill-unknown">Analysis in progress</span>
-          </div>
-        </div>
-
-        <div class="platform-card">
-          <div class="platform-name">ChatGPT</div>
-          <div class="platform-surfaces">
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>iOS</span>
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Android</span>
-          </div>
-          <div class="tracker-pills">
-            <span class="pill pill-unknown">Analysis in progress</span>
-          </div>
-        </div>
-
-        <div class="platform-card">
-          <div class="platform-name">Grok</div>
-          <div class="platform-surfaces">
-            <span class="surface-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>Android</span>
-          </div>
-          <div class="tracker-pills">
-            <span class="pill pill-unknown">Analysis in progress</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── Methodology ───────────────────────────────────────── -->
-  <section id="methodology">
-    <div class="container">
-      <h2 class="section-heading">Methodology</h2>
-      <p class="section-subtitle">
-        We use Chrome's developer console to capture evidence of data flows to third-party trackers along screenshots. We performed various tests to assess the role of cookie banners in observed behaviors. All experiments were run in Spain. Research artifacts and data can be shared.
-      </p>
-
-      <div class="method-steps">
-        <div class="method-step">
-          <h4>Instrument &amp; Intercept</h4>
-          <p>mitmproxy (mobile) and Puppeteer+stealth (web) intercept all outbound network traffic during controlled interaction sessions.</p>
-        </div>
-        <div class="method-step">
-          <h4>Standardized Test Prompt</h4>
-          <p>A fixed health-related prompt is used identically on all surfaces, enabling detection of exact prompt text appearing in tracker payloads.</p>
-        </div>
-        <div class="method-step">
-          <h4>Condition Matrix</h4>
-          <p>Each surface is tested across all combinations of auth state, platform privacy mode, browser private mode, and privacy toggle settings.</p>
-        </div>
-        <div class="method-step">
-          <h4>Tracker Detection</h4>
-          <p>Outbound requests are matched against a curated tracker domain list. PII detection scans payloads for prompt text, emails, and identifiers.</p>
-        </div>
-        <div class="method-step">
-          <h4>HAR + JSON Archiving</h4>
-          <p>Full session traffic is exported as HAR files and structured JSON for reproducibility and later third-party verification.</p>
-        </div>
-        <div class="method-step">
-          <h4>Cross-surface Comparison</h4>
-          <p>Findings are unified into a normalized comparison table, enabling apples-to-apples comparison across all tested AI platforms.</p>
-        </div>
-      </div>
-
-      <div style="margin-top: 2rem;">
-        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">Standard Test Prompt</h3>
-        <div class="callout" style="background: #fff; border-color: var(--muted); font-family: Georgia, serif; font-style: italic; font-size: 0.95rem;">
-          "What are the symptoms of liver cancer and what treatment options exist?"
-          <br><br>
-          <span style="font-style: normal; font-size: 0.85rem; color: var(--muted);">Follow-up:</span>
-          <br>
-          <em>"Can you help me interpret a biopsy result? My doctor said stage 2."</em>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── Disclosure Timeline ───────────────────────────────── -->
-  <section id="disclosure">
-    <div class="container">
-      <h2 class="section-heading">Disclosure Timeline</h2>
-      <p class="section-subtitle">Responsible disclosure process. Dates and responses to be filled in.</p>
-
-      <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-date">TBD</div>
-          <div class="tl-dot"></div>
-          <div class="tl-body">
-            <strong>Initial Discovery</strong>
-            <p>[Placeholder] First observed tracker activity during routine traffic analysis of Perplexity AI web interface.</p>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-date">TBD</div>
-          <div class="tl-dot"></div>
-          <div class="tl-body">
-            <strong>Expanded Testing</strong>
-            <p>[Placeholder] Systematic testing across all platforms and surfaces commenced. Condition matrix applied consistently.</p>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-date">TBD</div>
-          <div class="tl-dot"></div>
-          <div class="tl-body">
-            <strong>Vendor Notification — Perplexity</strong>
-            <p>[Placeholder] Perplexity AI notified of findings via security disclosure channel.</p>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-date">TBD</div>
-          <div class="tl-dot"></div>
-          <div class="tl-body">
-            <strong>Vendor Response</strong>
-            <p>[Placeholder] Awaiting / received response from [Platform]. Details to be disclosed here.</p>
-          </div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-date">TBD</div>
-          <div class="tl-dot open"></div>
-          <div class="tl-body">
-            <strong>Public Disclosure</strong>
-            <p>[Placeholder] This page and accompanying paper published.</p>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top: 2rem; font-size: 0.88rem; color: var(--muted-dark);">
-        <strong>Note:</strong> We follow responsible disclosure principles. Vendors were given a reasonable window
-        to respond and remediate before public disclosure. Litigation context: see
-        <em>Doe v. Perplexity AI, Meta Platforms, Google</em>, Case 3:26-cv-02803 (filed 2026-03-31).
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── Paper / Resources ─────────────────────────────────── -->
-  <section id="paper">
-    <div class="container">
-      <h2 class="section-heading">Paper &amp; Resources</h2>
-      <p class="section-subtitle">Research artifacts, code, and datasets will be linked here on publication.</p>
-
-      <div class="two-col">
-        <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1.4rem; background: #fff;">
-          <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 0.5rem;">Research Paper</div>
-          <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; line-height: 1.35;">[Paper Title Placeholder]</div>
-          <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem;">[Authors] · [Venue] · [Year]</div>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <a href="#" class="btn btn-primary" style="font-size: 0.8rem; padding: 5px 14px;">PDF</a>
-            <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px;">arXiv</a>
-            <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px;">BibTeX</a>
-          </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-          <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.2rem; background: #fff; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 0.88rem; font-weight: 700;">Source Code &amp; Scanner</div>
-              <div style="font-size: 0.8rem; color: var(--muted);">Puppeteer tracker scanner + mobile methodology</div>
-            </div>
-            <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px;">GitHub</a>
-          </div>
-          <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.2rem; background: #fff; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 0.88rem; font-weight: 700;">Dataset &amp; HAR Files</div>
-              <div style="font-size: 0.8rem; color: var(--muted);">Full session captures, JSON reports</div>
-            </div>
-            <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px;">Zenodo</a>
-          </div>
-          <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.2rem; background: #fff; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 0.88rem; font-weight: 700;">Policy Archive</div>
-              <div style="font-size: 0.8rem; color: var(--muted);">Timestamped privacy policy snapshots</div>
-            </div>
-            <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px;">View</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── FAQ ──────────────────────────────────────────────── -->
-  <section id="faq">
-    <div class="container">
-      <h2 class="section-heading">FAQ</h2>
-      <p class="section-subtitle">Common questions about the research and its implications.</p>
-
-      <div class="faq-list">
-
-        <details class="faq">
-          <summary>Am I affected if I use these AI platforms?</summary>
-          <div class="faq-body">
-            <p>[Placeholder answer] If you have used any of the tested platforms while entering sensitive queries,
-            your conversation data may have been transmitted to third-party advertising networks.
-            This includes sessions in "private" or "incognito" mode.</p>
-          </div>
-        </details>
-
-        <details class="faq">
-          <summary>What data specifically was leaked?</summary>
-          <div class="faq-body">
-            <p>[Placeholder answer] We observed varying degrees of leakage: from basic session identifiers and IP addresses
-            to, in severe cases, the full text of conversation prompts appearing in advertising network payloads.</p>
-          </div>
-        </details>
-
-        <details class="faq">
-          <summary>Does using a VPN or ad-blocker protect me?</summary>
-          <div class="faq-body">
-            <p>[Placeholder answer] Browser-based ad blockers can intercept client-side Pixel requests, but cannot
-            block server-to-server transmission via Meta's Conversions API. A VPN may obscure your IP but does not
-            prevent the platform from relaying conversation content via server-side channels.</p>
-          </div>
-        </details>
-
-        <details class="faq">
-          <summary>Have the affected companies been notified?</summary>
-          <div class="faq-body">
-            <p>[Placeholder answer] We followed responsible disclosure. See the <a href="#disclosure">Disclosure Timeline</a>
-            for the current status of vendor notifications and responses.</p>
-          </div>
-        </details>
-
-        <details class="faq">
-          <summary>How was this research conducted?</summary>
-          <div class="faq-body">
-            <p>[Placeholder answer] See the full <a href="#methodology">Methodology</a> section. In brief:
-            we used network interception tools (mitmproxy and Puppeteer) to capture all outbound traffic
-            during standardized interaction sessions, then analyzed payloads for PII and conversation content.</p>
-          </div>
-        </details>
-
-        <details class="faq">
-          <summary>What legal context exists around these findings?</summary>
-          <div class="faq-body">
-            <p>[Placeholder answer] <em>Doe v. Perplexity AI, Meta Platforms, Google</em> (Case 3:26-cv-02803,
-            filed March 31, 2026) independently confirmed Perplexity's embedding of Meta Pixel and other trackers.
-            Our research provides technical corroboration and broader coverage across additional platforms.</p>
-          </div>
-        </details>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ─── Contact / Team ────────────────────────────────────── -->
-  <section id="contact">
-    <div class="container">
-      <h2 class="section-heading">Researchers</h2>
-      <p class="section-subtitle">Questions, responsible disclosure, or collaboration inquiries.</p>
-
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem; margin-top: 2rem;">
-
-        <div class="researcher-card">
-          <div class="researcher-avatar">AG</div>
-          <div class="researcher-name">Dr. Aniketh Girish</div>
-          <div class="researcher-affil">IMDEA Networks</div>
-          <a href="mailto:aniketh.girish@networks.imdea.org" class="researcher-email">aniketh.girish@networks.imdea.org</a>
-        </div>
-
-        <div class="researcher-card">
-          <div class="researcher-avatar">GO</div>
-          <div class="researcher-name">Guilherme Oliveira</div>
-          <div class="researcher-affil">IMDEA Networks</div>
-          <a href="mailto:guilherme.oliveira@networks.imdea.org" class="researcher-email">guilherme.oliveira@networks.imdea.org</a>
-        </div>
-
-        <div class="researcher-card">
-          <div class="researcher-avatar">GS</div>
-          <div class="researcher-name">Prof. Guillermo Suarez-Tangil</div>
-          <div class="researcher-affil">IMDEA Networks</div>
-          <a href="mailto:guillermo.suarez-tangil@imdea.org" class="researcher-email">guillermo.suarez-tangil@imdea.org</a>
-        </div>
-
-        <div class="researcher-card">
-          <div class="researcher-avatar">JG</div>
-          <div class="researcher-name">Jorge García Herrero</div>
-          <div class="researcher-affil">Lawyer &amp; DPO</div>
-          <a href="mailto:jgh@jorgegarciaherrero.com" class="researcher-email">jgh@jorgegarciaherrero.com</a>
-        </div>
-
-        <div class="researcher-card">
-          <div class="researcher-avatar">MS</div>
-          <div class="researcher-name">Miguel Sanchez</div>
-          <div class="researcher-affil">IMDEA Networks / UC3M</div>
-          <a href="mailto:miguel.sanchez@networks.imdea.org" class="researcher-email">miguel.sanchez@networks.imdea.org</a>
-        </div>
-
-        <div class="researcher-card">
-          <div class="researcher-avatar">NV</div>
-          <div class="researcher-name">Prof. Narseo Vallina-Rodriguez</div>
-          <div class="researcher-affil">IMDEA Networks / AppCensus</div>
-          <a href="mailto:narseo.vallina@imdea.org" class="researcher-email">narseo.vallina@imdea.org</a>
-        </div>
-
-        <div class="researcher-card">
-          <div class="researcher-avatar">TJ</div>
-          <div class="researcher-name">Tautvydas Jackevičius</div>
-          <div class="researcher-affil">IMDEA Networks</div>
-          <a href="mailto:tautvydas.jackevicius@networks.imdea.org" class="researcher-email">tautvydas.jackevicius@networks.imdea.org</a>
-        </div>
-
-      </div>
-
-      <p style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--muted);">For responsible disclosure, press, or collaboration inquiries, email us directly or contact the corresponding author.</p>
-
-    </div>
-  </section>
-
-  <!-- ─── Footer ────────────────────────────────────────────── -->
-  <footer>
-    <div class="container">
-      <div class="footer-inner">
-        <div>
-          <div class="footer-brand"><span style="color:var(--brand);">L</span>eaky<span style="color:var(--brand);">LM</span></div>
-          <div class="footer-copy">Privacy research disclosure · [Year] · [Institution]</div>
-        </div>
-        <div class="footer-links">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Research disclosure: AI assistants leak your conversations to third-party trackers including Meta, Google, and others."
+    />
+    <title>LeakyLM — AI Assistants Are Leaking Your Conversations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link href="./css/datatables.css" rel="stylesheet" />
+    <link href="./css/style.css" rel="stylesheet" />
+    <script src="./js/jquery_3.7.1.min.js"></script>
+    <script src="./js/jquery.dataTables.min.js"></script>
+  </head>
+  <body>
+    <!-- ─── Navigation ─────────────────────────────────────────── -->
+    <nav class="site-nav" id="site-nav">
+      <div class="nav-inner">
+        <a href="#" class="site-title"
+          ><span style="color: var(--brand)">L</span>eaky<span style="color: var(--brand)">LM</span></a
+        >
+        <div class="nav-links" id="nav-links">
           <a href="#findings">Findings</a>
-          <a href="#leakage-matrix">Data</a>
+          <a href="#permalink-visibility">Access Control</a>
+          <a href="#leakage-matrix">Leakage Matrix</a>
           <a href="#methodology">Methodology</a>
-          <a href="#paper">Paper</a>
+          <span class="nav-divider"></span>
+          <a href="#web">Web</a>
+          <a href="#browser">Browser</a>
+          <a href="#mobile">Mobile</a>
+          <span class="nav-divider"></span>
           <a href="#disclosure">Disclosure</a>
+          <a href="#faq">FAQ</a>
           <a href="#contact">Contact</a>
         </div>
+        <div class="nav-ext">
+          <a href="#paper">Read Paper</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ─── Hero ───────────────────────────────────────────────── -->
+    <section class="hero" id="intro">
+      <div class="container">
+        <div class="hero-eyebrow">
+          <span class="dot"></span>
+          Research Disclosure
+        </div>
+        <div class="hero-body">
+          <div class="hero-text">
+            <h1>Your AI Assistant Is <em>Leaking</em> Your Conversations</h1>
+            <p class="hero-lead">
+              We disclose structural privacy risks in prominent generative AI products — Perplexity, Anthropic's Claude,
+              xAI's Grok, and OpenAI's ChatGPT — caused by third-party trackers embedded in LLM services that leak user
+              conversations, identities, and sensitive metadata.
+            </p>
+            <div class="hero-actions">
+              <a href="#leakage-matrix" class="btn btn-primary">See the Evidence</a>
+              <a href="#paper" class="btn btn-outline">Read the Paper</a>
+              <a href="#methodology" class="btn btn-neutral">Methodology</a>
+            </div>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat-cell">
+              <span class="stat-number" data-count="4">4</span>
+              <span class="stat-label">AI Platforms Tested</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-number" data-count="13">13+</span>
+              <span class="stat-label">Third-party Trackers Found</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-number" data-count="4">4</span>
+              <span class="stat-label">Platforms Affected</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-number" data-count="0">0</span>
+              <span class="stat-label">Disclosed to Users</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Callouts ────────────────────────────────────────── -->
+    <div class="hero-callouts">
+      <div class="container">
+        <div class="callout callout-success">
+          <div class="callout-title">Update — [Date]</div>
+          [Platform] has removed the [tracker] script following responsible disclosure.
+        </div>
+        <div class="callout callout-info">
+          <div class="callout-title">Paper Accepted — [Venue]</div>
+          Our peer-reviewed paper "<em>[Title]</em>" has been accepted to [Conference].
+        </div>
       </div>
     </div>
-  </footer>
 
-  <!-- ─── Lightbox ──────────────────────────────────────────── -->
-  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
-    <button class="lightbox-close" id="lightbox-close" aria-label="Close">✕</button>
-    <div class="lightbox-inner">
-      <img id="lightbox-img" src="" alt="">
-      <p class="lightbox-caption" id="lightbox-caption"></p>
+    <!-- ─── Description ──────────────────────────────────────── -->
+    <section id="description">
+      <div class="container">
+        <p style="font-size: 1rem; line-height: 1.8; color: var(--text); margin-bottom: 1.25em">
+          Generative AI is rapidly becoming a foundational layer of the Internet, enabling the emergence of agentic
+          systems that mediate users' interaction with digital services. Despite this transformation, underlying
+          data-driven economic dynamics remain largely unchanged, as acknowledged by prominent
+          <a href="https://www.criteo.com" class="doc-link" target="_blank" rel="noopener">industry actors</a>. This
+          continuity extends to the integration of third-party trackers within generative AI ecosystems to monitor
+          users' actions, which retain the capability to collect sensitive user data.
+        </p>
+        <p style="font-size: 1rem; line-height: 1.8; color: var(--text); margin-bottom: 0">
+          In this report, we disclose concerning structural privacy risks caused by (1) the systematic introduction of
+          third-party analytics services in prominent generative AI products developed by major AI actors such as
+          Perplexity, Anthropic's Claude, xAI's Grok, and OpenAI's ChatGPT; and (2) insecure access control mechanisms
+          in some of these LLMs that leak user conversations to third-party trackers embedded in LLM services, as well
+          as the conversation title which can be a very sensitive data type that can disclose users' concerns,
+          conversation topics, interests, and more. Meta's AI, MS Copilot, and Google Gemini are out of scope of this
+          analysis because they act both as LLM providers and third-party trackers, falling into a different threat
+          model. We plan to extend the scope of our analysis to include these products in the coming weeks.
+        </p>
+      </div>
+    </section>
+
+    <!-- ─── Key Findings ──────────────────────────────────────── -->
+    <section id="findings">
+      <div class="container">
+        <h2 class="section-heading">Key privacy concerning observations</h2>
+
+        <div class="three-col">
+          <div class="finding-card">
+            <div class="finding-title">
+              Leakage of conversation URLs to third-party advertising and tracking services
+            </div>
+            <p>
+              User conversations in LLM services frequently contain sensitive information introduced by end users. Yet,
+              conversation URLs are disclosed to third-party trackers such as the Meta Pixel, as shown in Figure 1 by
+              default, for Grok and Perplexity. These URLs often serve as publicly available
+              <a href="https://en.wikipedia.org/wiki/Permalink" class="doc-link" target="_blank" rel="noopener"
+                >permalinks</a
+              >
+              with weak access control, making them accessible by default to anyone knowing the URL. This potentially
+              allows the trackers to access user conversations and their content.
+              <a href="#permalink-visibility" class="doc-link">Table 1</a> describes the default access control
+              mechanisms across LLMs.
+            </p>
+          </div>
+          <div class="finding-card blue">
+            <div class="finding-title">Linkability to user identities</div>
+            <p>
+              Conversation URLs are frequently shared by LLM providers alongside tracking identifiers to third-party
+              trackers (e.g., cookies such as <code class="inline-code">fbp</code>, in the case of Meta Pixel), which
+              enable trackers to map online activity to user identities and behavioral profiles per
+              <a href="https://www.facebook.com/privacy/policy/" class="doc-link" target="_blank" rel="noopener"
+                >official privacy policies</a
+              >. In some cases, the trackers also perform
+              <a
+                href="https://petsymposium.org/popets/2024/popets-2024-0122.php"
+                class="doc-link"
+                target="_blank"
+                rel="noopener"
+                >cookie syncing/server-side tracking</a
+              >
+              and collect user email hashes through the logging forms, allowing for persistent user tracking, targeting,
+              and
+              <a
+                href="https://www.ftc.gov/policy/advocacy-research/tech-at-ftc/2024/07/no-hashing-still-doesnt-make-your-data-anonymous"
+                class="doc-link"
+                target="_blank"
+                rel="noopener"
+                >reidentification</a
+              >. <a href="#leakage-matrix" class="doc-link">Table 2</a> lists the PII and conversation leaks observed.
+            </p>
+          </div>
+          <div class="finding-card amber">
+            <div class="finding-title">Potentially misleading privacy controls and privacy disclosures</div>
+            <p>
+              The studied LLMs offer privacy controls to limit conversations' visibility, but in some cases, they may
+              mislead users by implying stronger protections than those which are actually enforced, potentially
+              undermining the expected privacy guarantees. Furthermore, the privacy policies of
+              <a
+                href="https://web.archive.org/web/20260409172159/https://x.ai/legal/cookie-policy"
+                class="doc-link"
+                target="_blank"
+                rel="noopener"
+                >Grok</a
+              >,
+              <a
+                href="https://web.archive.org/web/20260406164032/https://www.perplexity.ai/hub/legal/privacy-policy"
+                class="doc-link"
+                target="_blank"
+                rel="noopener"
+                >Perplexity</a
+              >,
+              <a href="https://openai.com/policies/cookie-policy/" class="doc-link" target="_blank" rel="noopener"
+                >OpenAI</a
+              >, and
+              <a
+                href="https://privacy.claude.com/en/articles/10023541-what-cookies-does-anthropic-use"
+                class="doc-link"
+                target="_blank"
+                rel="noopener"
+                >Claude</a
+              >
+              consistently confirm the collection of user conversations, usage telemetry, and metadata for first-party
+              purposes, the use of third-party cookies (e.g., Meta, Google, TikTok) for analytics and advertising, and
+              even data sharing with third parties. Yet, they do not clearly state that user conversations are shared
+              with online advertising and tracking services, relying instead on broad and ambiguous language (e.g.,
+              <em>"content you submit"</em> or <em>"business partners"</em>) that leaves uncertainty about actual data
+              flows. Cookie consent forms present transparency shortcomings about the cookies collected and their
+              purposes as Fig 2 shows.
+            </p>
+          </div>
+        </div>
+
+        <p class="findings-coda">
+          Although preliminary, our findings reveal systemic weak privacy and security postures across LLM services.
+          While we do not yet have evidence that conversations are read by trackers, permalink dissemination and by
+          extension the capability to read them exist, and therefore the potential risk.
+        </p>
+      </div>
+    </section>
+
+    <!-- ─── Privacy Impact ───────────────────────────────────── -->
+    <section id="impact">
+      <div class="container">
+        <h2 class="section-heading">Privacy Impact: Why does it matter?</h2>
+
+        <p>
+          Generative AI systems are rapidly reaching mass adoption. According to
+          <a
+            href="https://ec.europa.eu/eurostat/web/products-eurostat-news/w/ddn-20251216-3"
+            class="doc-link"
+            target="_blank"
+            rel="noopener"
+            >Eurostat</a
+          >, <strong>32.7% of the EU population (ages 16–74) used generative AI in 2025</strong>, primarily for personal
+          purposes (25.1%), but also for work (15.1%), covering all sorts of professionals, and education (9.4%).
+        </p>
+
+        <p>
+          User conversations frequently contain sensitive information as users often perceive LLMs as trusted
+          assistants. This perception increases the likelihood of oversharing sensitive information. Prior research
+          shows that
+          <a href="https://arxiv.org/abs/2407.11438" class="doc-link" target="_blank" rel="noopener"
+            >PII is disclosed to LLMs in unexpected contexts</a
+          >, including sexual preferences, mental support or health conditions, which carries significant privacy risks.
+          These privacy threats are aggravated by LLMs' ability to infer user attributes. These concerns extend at the
+          enterprise and public sector level, where intellectual property and sensitive information can be disclosed,
+          with direct national security implications. In 2023,
+          <a
+            href="https://www.forbes.com/sites/siladityaray/2023/05/02/samsung-bans-chatgpt-and-other-chatbots-for-employees-after-sensitive-code-leak/"
+            class="doc-link"
+            target="_blank"
+            rel="noopener"
+            >Samsung banned ChatGPT internal usage</a
+          >
+          after employees leaked sensitive code and intellectual property to LLMs.
+        </p>
+
+        <p>
+          When conversation data is shared with
+          <strong
+            >third parties like Meta and Google along with cookies and other user identifiers like email hashes without
+            sufficient user awareness and weak access control mechanisms</strong
+          >, a new threat scenario arises. The observed practices also suggest that the
+          <strong
+            >data-driven business models of the traditional web (e.g., advertising, analytics) are being replicated in
+            LLM ecosystems with limited oversight.</strong
+          >
+        </p>
+      </div>
+    </section>
+
+    <!-- ─── Permalink Visibility ─────────────────────────────── -->
+    <section id="permalink-visibility">
+      <div class="container">
+        <h2 class="section-heading">Access Control</h2>
+        <p class="section-subtitle">
+          Table 1. Default permalink access control mechanisms and visibility across tiers.
+        </p>
+
+        <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 0.8rem">
+          Click the Perplexity row to expand notes.
+        </p>
+        <div class="table-wrap">
+          <table class="matrix" id="table-access">
+            <thead>
+              <tr>
+                <th>Provider</th>
+                <th>Guest tier</th>
+                <th>Free tier</th>
+                <th>Paid tier</th>
+                <th>Privacy controls</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="matrix-row" data-detail="a1">
+                <td class="platform-col">Perplexity</td>
+                <td>Permalinks are fully accessible without login.</td>
+                <td>Permalinks are only visible to owners unless explicitly shared.</td>
+                <td>
+                  Supports incognito chats in free and premium tiers. They won't be saved in the account's history. Yet,
+                  users can share them.
+                </td>
+                <td>
+                  Users can choose one of three settings: <em>Private</em>, <em>Whitelist</em> (only allowed people),
+                  and <em>Everyone</em>. If shared with everyone, the chat link is the same as the permalink.
+                </td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="a1" hidden>
+                <td colspan="6">
+                  <div class="detail-row-body">
+                    Permalink doesn't disclose private conversations by default. In shared incognito chats, once users
+                    leave incognito mode, they will not be able to unshare the conversation.
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="platform-col">Anthropic Claude.ai</td>
+                <td style="color: var(--muted)">Not supported.</td>
+                <td>Permalinks are only visible to owners unless explicitly shared.</td>
+                <td>
+                  Implements
+                  <a
+                    href="https://claude.ai/settings/data-privacy-controls"
+                    class="doc-link"
+                    target="_blank"
+                    rel="noopener"
+                    >access control mechanisms</a
+                  >
+                  for sharing conversations with others.
+                </td>
+                <td>—</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class="platform-col">OpenAI ChatGPT</td>
+                <td>Conversation permalinks are only visible to owners unless explicitly shared.</td>
+                <td>Conversation permalinks are only visible to owners unless explicitly shared.</td>
+                <td>
+                  Offers
+                  <a
+                    href="https://web.archive.org/web/20260412141831/https://openai.com/consumer-privacy/"
+                    class="doc-link"
+                    target="_blank"
+                    rel="noopener"
+                    >access control</a
+                  >
+                  for sharing conversations with others.
+                </td>
+                <td>—</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class="platform-col">xAI Grok</td>
+                <td>Accessible by default. Guest chats are always public.</td>
+                <td>Allows for the creation of incognito chats, as in Perplexity's case.</td>
+                <td>Conversations are accessible by default, yet users can restrict access (opt-out).</td>
+                <td>
+                  If the link has already been shared before changing visibility settings, the conversation remains
+                  accessible unless users revoke access explicitly at the chat level.
+                </td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Leakage Matrix ────────────────────────────────────── -->
+    <section id="leakage-matrix">
+      <div class="container">
+        <h2 class="section-heading">Leakage Matrix</h2>
+        <p class="section-subtitle">Table 2. Summary of PII and conversation/prompt dissemination to third parties.</p>
+
+        <div class="matrix-toolbar">
+          <p style="font-size: 0.82rem; color: var(--muted); margin: 0">Click any row to expand technical details.</p>
+          <button id="btn-expand-all" class="btn-expand-all">Expand all</button>
+        </div>
+        <div class="table-wrap">
+          <table class="matrix" id="table-pii">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Third party</th>
+                <th>Data leaked</th>
+                <th>Fires when</th>
+                <th style="width: 32px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="matrix-row" data-detail="d1">
+                <td class="platform-col">Perplexity</td>
+                <td><span class="pill pill-meta">Meta</span></td>
+                <td><code class="inline-code">fbp</code> cookie, conversation URL</td>
+                <td><span class="leak-tag leak-discontinued">Discontinued Apr 2026</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d1" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    Discontinued as of April 3rd, 2026, possibly in response to
+                    <a
+                      href="https://cdn.arstechnica.net/wp-content/uploads/2026/04/Doe-v-Perplexity-Complaint-3-31-26.pdf"
+                      class="doc-link"
+                      target="_blank"
+                      rel="noopener"
+                      >US class action</a
+                    >.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d2">
+                <td class="platform-col">Perplexity</td>
+                <td><span class="pill pill-unknown">Datadog</span></td>
+                <td>Email address (raw), conversation URL, metadata (timezone, device ID)</td>
+                <td><span class="leak-tag leak-always">Always</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d2" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    The URL encodes the text of the first query of the chat (i.e.,
+                    <code class="inline-code">perplexity.ai/search/QUERY-slug</code>, limited to ~30 chars), disclosing
+                    the intent of the conversation. The slug can be sufficient to access the conversation. User email is
+                    also disclosed during interaction, not only in registration forms.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d3">
+                <td class="platform-col">Perplexity</td>
+                <td><span class="pill pill-unknown">Singular</span></td>
+                <td>Email hash, OS and browser metadata</td>
+                <td><span class="leak-tag leak-always">Always</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d3" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    User email hash is also disclosed when users interact with the service, not only in registration
+                    forms.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d4">
+                <td class="platform-col">Anthropic Claude.ai</td>
+                <td><span class="pill pill-meta">Meta</span></td>
+                <td><code class="inline-code">fbp</code> cookie and browser metadata</td>
+                <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d4" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    The
+                    <a
+                      href="https://www.facebook.com/privacy/policy/version/5407378522724295/"
+                      class="doc-link"
+                      target="_blank"
+                      rel="noopener"
+                      >Meta Pixel</a
+                    >
+                    loads <code class="inline-code">fbevents.js</code> client-side inside a sandboxed iframe at
+                    <code class="inline-code">a.claude.ai</code>, setting a
+                    <code class="inline-code">_fbp</code> persistence cookie. In parallel, the same event is forwarded
+                    server-side to Facebook Conversions API. Both transmissions share the same Segment
+                    <code class="inline-code">anonymousId</code>, potentially allowing Meta to join client-side and
+                    server-side events under a single user identity. Blocking the client-side pixel does not prevent
+                    Meta from receiving the event via the server-side channel. When non-essential cookies are rejected,
+                    the <code class="inline-code">_fbp</code> cookie is not set and the server-side container forwarding
+                    events to the Conversions API is not observed.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d5">
+                <td class="platform-col">Anthropic Claude.ai</td>
+                <td><span class="pill pill-unknown">Intercom</span></td>
+                <td>Email addresses and conversation URL</td>
+                <td><span class="leak-tag leak-always">Always (authenticated)</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d5" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    A persistent WebSocket to <code class="inline-code">nexus-websocket-a.intercom.io</code> sends the
+                    current page URL every ~2 min., giving Intercom a timestamped log of every conversation the user
+                    visits — sufficient to identify and access the specific conversation. This flow fires
+                    unconditionally on every authenticated session. Disclosing email, name, subscription tier, and
+                    organisation UUID to a third party in sessions where the support widget is never opened may infringe
+                    the data minimisation principle under Article 5 GDPR.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d6">
+                <td class="platform-col">Anthropic Claude.ai</td>
+                <td><span class="pill pill-unknown">Datadog</span></td>
+                <td>User anonymous ID, viewport data, page URL (with chat GUID), usage statistics and metadata</td>
+                <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d6" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">Only observed when accepting non-essential cookies.</div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d7">
+                <td class="platform-col">Anthropic Claude.ai</td>
+                <td>
+                  <span class="pill pill-unknown" style="background: #f3f0ff; color: #6d28d9">Server-side ×11</span>
+                </td>
+                <td>
+                  User email, account UUID, subscription plan, page URL (incl. conversation UUID),
+                  <a
+                    href="https://segment.com/docs/connections/spec/common"
+                    class="doc-link"
+                    target="_blank"
+                    rel="noopener"
+                    >Segment</a
+                  >
+                  <code class="inline-code">anonymousId</code>,
+                  <a
+                    href="https://amplitude.com/docs/data/sources/instrument-track-sessions"
+                    class="doc-link"
+                    target="_blank"
+                    rel="noopener"
+                    >Amplitude</a
+                  >
+                  session ID, country
+                </td>
+                <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d7" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    Claude uses Segment analytics fetching its configuration from
+                    <code class="inline-code">a-cdn.anthropic.com</code> (first-party), which includes the Facebook
+                    Pixel PII config. Anthropic explicitly whitelists <code class="inline-code">email</code>,
+                    <code class="inline-code">userAgent</code>, and <code class="inline-code">country</code>; and
+                    blocklists conversation title, <code class="inline-code">account_uuid</code>,
+                    <code class="inline-code">organization_uuid</code>, <code class="inline-code">billing_type</code>,
+                    <code class="inline-code">surface</code>, and <code class="inline-code">version</code>. Proxying
+                    through a first-party domain means hostname-based ad blockers targeting
+                    <code class="inline-code">api.segment.io</code> will not intercept this traffic. <br /><br />
+                    We observe that Claude forwards user events server-to-server from Anthropic's infrastructure to
+                    eleven trackers with conversion APIs: Facebook Conversions API, LinkedIn Conversions API, TikTok
+                    Conversions API, Reddit Conversions API, Google Enhanced Conversions, Amplitude, Iterable, HubSpot,
+                    Pinterest Conversions API, Podscribe, and DCM Floodlight. As this forwarding occurs
+                    server-to-server, it evades ad blockers. Each forwarded event carries two shared identifiers that
+                    enable ID bridging, so user activities on Claude may be linkable across advertising platforms to a
+                    single Amplitude session without the user's knowledge or consent. If these cookies are eventually
+                    bridged with email hashes, it can facilitate user re-identification and de-anonymization. Only
+                    triggered when users accept non-essential cookies.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d8">
+                <td class="platform-col">OpenAI ChatGPT</td>
+                <td><span class="pill pill-google">Google Analytics</span></td>
+                <td>Conversation URL, page title (chat topic)</td>
+                <td><span class="leak-tag leak-always">Always (free logged-in)</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d8" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    The chat topic title is transmitted via the <code class="inline-code">dt</code> parameter to Google
+                    Analytics, alongside the full conversation URL in the <code class="inline-code">dl</code> parameter.
+                    This leak only occurs for free logged-in users, regardless of whether they accept or reject cookies.
+                    <br /><br />
+                    ChatGPT's Content-Security-Policy header explicitly whitelists numerous third-party ad and analytics
+                    domains (Facebook, TikTok, Google, LinkedIn, Bing, Reddit), confirming the tracking infrastructure
+                    is in place. However, none were observed firing in our experiments — activation may depend on
+                    account type, geography, A/B test cohort, or server-side tracking.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d9">
+                <td class="platform-col">xAI Grok</td>
+                <td><span class="pill pill-google">Google Analytics &amp; Doubleclick</span></td>
+                <td>Conversation URL, page title, metadata</td>
+                <td><span class="leak-tag leak-always">Always</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d9" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    The chat topic title is transmitted via the <code class="inline-code">dt</code> parameter to Google
+                    Analytics and the <code class="inline-code">tab</code> parameter to Google Ads (DoubleClick),
+                    alongside the full conversation URL. The connection to Google Analytics occurs in all circumstances,
+                    regardless of users' cookie consent on OneTrust's forms.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d10">
+                <td class="platform-col">xAI Grok</td>
+                <td>
+                  <span class="pill pill-unknown"
+                    ><a
+                      href="https://ads.tiktok.com/help/article/tiktok-pixel"
+                      class="doc-link"
+                      target="_blank"
+                      rel="noopener"
+                      >TikTok</a
+                    ></span
+                  >
+                </td>
+                <td>Hashed email, conversation URL, page title, <code class="inline-code">ttp</code> cookie</td>
+                <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d10" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    <code class="inline-code">context.page.url</code> contains the full conversation URL;
+                    <code class="inline-code">auto_collected_properties.content_data.meta</code> contains the chat topic
+                    title. TikTok collects email hash on account login page and maps it to TikTok cookies. Connection
+                    only occurs after accepting non-essential cookies.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d11">
+                <td class="platform-col">xAI Grok</td>
+                <td><span class="pill pill-meta">Meta</span></td>
+                <td>
+                  Conversation URL (incl. conversation UUID), page title, <code class="inline-code">fbp</code> cookie
+                </td>
+                <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d11" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    Every URL change triggers a PageView event. Connection only occurs after accepting non-essential
+                    cookies.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d12">
+                <td class="platform-col">xAI Grok</td>
+                <td>
+                  <span class="pill pill-unknown" style="background: #f3f0ff; color: #6d28d9">Server-side GTM</span>
+                </td>
+                <td>
+                  Conversation URL, page title, <code class="inline-code">_fbp</code>,
+                  <code class="inline-code">_ttp</code> cookies
+                </td>
+                <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d12" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    <code class="inline-code">grok.com</code> embeds a Google Tag Manager container (<code
+                      class="inline-code"
+                      >GTM-TBL6BD7W</code
+                    >) configured to route events through a server-side GTM (sGTM) instance. A custom event
+                    <code class="inline-code">sent_3_chat_messages</code> fires after 3 messages in a session,
+                    transmitting the full conversation URL (<code class="inline-code">page_location</code>) and chat
+                    topic title to sGTM. sGTM then forwards this event server-to-server to Meta Conversions API and
+                    TikTok Events API — invisible to the browser and not blockable by ad blockers or privacy controls.
+                    The same payload carries both Meta's <code class="inline-code">fbp</code> and TikTok's
+                    <code class="inline-code">ttp</code> cookies, enabling ID bridging between Facebook and TikTok under
+                    a single user identity. Only occurs after accepting non-essential cookies.
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="margin-top: 1.5rem; font-size: 0.82rem; color: var(--muted)">
+          Full dataset and HAR files will be released alongside the paper.
+          <a href="#methodology">See methodology</a> for experimental conditions.
+        </p>
+      </div>
+    </section>
+
+    <!-- ─── Web Platforms ────────────────────────────────────── -->
+    <section id="web">
+      <div class="container">
+        <h2 class="section-heading">Web</h2>
+        <p class="section-subtitle">Findings from web browser sessions across the four tested LLM platforms.</p>
+
+        <div class="web-layout">
+          <div class="web-main">
+            <div class="platform-grid" style="grid-template-columns: repeat(2, 1fr)">
+              <div class="platform-card">
+                <div class="platform-name">Perplexity</div>
+                <div class="platform-surfaces">
+                  <span class="surface-tag"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <path
+                        d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                      /></svg
+                    >Web</span
+                  >
+                </div>
+                <div class="tracker-pills">
+                  <span class="pill pill-meta">Meta Pixel ✝</span>
+                  <span class="pill pill-unknown" style="background: #fef9e7; color: #b45309; border: none"
+                    >Datadog</span
+                  >
+                  <span class="pill pill-unknown" style="background: #f3f0ff; color: #6d28d9; border: none"
+                    >Singular</span
+                  >
+                </div>
+              </div>
+
+              <div class="platform-card">
+                <div class="platform-name">Claude (Anthropic)</div>
+                <div class="platform-surfaces">
+                  <span class="surface-tag"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <path
+                        d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                      /></svg
+                    >Web</span
+                  >
+                </div>
+                <div class="tracker-pills">
+                  <span class="pill pill-meta">Meta Pixel</span>
+                  <span class="pill pill-unknown" style="background: #e8f4fd; color: #0369a1; border: none"
+                    >Intercom</span
+                  >
+                  <span class="pill pill-unknown" style="background: #fef9e7; color: #b45309; border: none"
+                    >Datadog</span
+                  >
+                  <span class="pill pill-more">+8 server-side</span>
+                </div>
+              </div>
+
+              <div class="platform-card">
+                <div class="platform-name">ChatGPT (OpenAI)</div>
+                <div class="platform-surfaces">
+                  <span class="surface-tag"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <path
+                        d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                      /></svg
+                    >Web</span
+                  >
+                </div>
+                <div class="tracker-pills">
+                  <span class="pill pill-google">Google Analytics</span>
+                </div>
+              </div>
+
+              <div class="platform-card">
+                <div class="platform-name">Grok (xAI)</div>
+                <div class="platform-surfaces">
+                  <span class="surface-tag"
+                    ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <path
+                        d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                      /></svg
+                    >Web</span
+                  >
+                </div>
+                <div class="tracker-pills">
+                  <span class="pill pill-google">Google Analytics</span>
+                  <span class="pill pill-google">DoubleClick</span>
+                  <span class="pill pill-unknown" style="background: #f0f0f0; color: #444; border: none">TikTok</span>
+                  <span class="pill pill-meta">Meta Pixel</span>
+                </div>
+              </div>
+            </div>
+            <p style="margin-top: 0.9rem; font-size: 0.8rem; color: var(--muted)">
+              ✝ Perplexity discontinued Meta Pixel as of April 3rd, 2026, possibly in response to the US class action
+              filing.
+            </p>
+          </div>
+
+          <div class="web-figures">
+            <figure class="research-figure research-figure--small">
+              <div
+                class="figure-img-wrap"
+                data-lightbox
+                data-caption="<strong>Figure 1.</strong> Screenshot showing the leak of conversation permalinks to Meta on Perplexity (top left) and to Google Analytics on Grok (top right) along the title of the conversation which contains metadata about the conversion topic. Perplexity discontinued this feature after a class action was filed in the USA in April 2026. At the bottom, we show how the Grok permalink can be accessed from another browser in incognito mode without logging."
+              >
+                <img
+                  src="assets/img/figure1.png"
+                  alt="Figure 1: leak of conversation permalinks to Meta and Google Analytics"
+                  loading="lazy"
+                />
+              </div>
+              <figcaption>
+                <span class="fig-label">Fig. 1</span> Permalink leakage to Meta (Perplexity) and Google Analytics
+                (Grok).
+              </figcaption>
+            </figure>
+            <figure class="research-figure research-figure--small">
+              <div
+                class="figure-img-wrap"
+                data-lightbox
+                data-caption="<strong>Figure 2.</strong> Cookie consent forms for Claude, Grok (through OneTrust), ChatGPT, and Perplexity."
+              >
+                <img src="assets/img/figure2.png" alt="Figure 2: Cookie consent forms" loading="lazy" />
+              </div>
+              <figcaption><span class="fig-label">Fig. 2</span> Cookie consent forms across platforms.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Browser Platforms ─────────────────────────────────── -->
+    <section id="browser">
+      <div class="container">
+        <h2 class="section-heading">Browser</h2>
+        <p class="section-subtitle">
+          AI-native browsers that embed LLM functionality directly into the browsing experience.
+        </p>
+
+        <div class="platform-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 560px">
+          <div class="platform-card">
+            <div class="platform-name">Perplexity Comet</div>
+            <div class="platform-surfaces">
+              <span class="surface-tag"
+                ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="14" rx="2" />
+                  <path d="M8 21h8M12 17v4" /></svg
+                >Desktop Browser</span
+              >
+            </div>
+            <div class="tracker-pills">
+              <span class="pill pill-unknown">Analysis in progress</span>
+            </div>
+          </div>
+
+          <div class="platform-card">
+            <div class="platform-name">Atlas Browser</div>
+            <div class="platform-surfaces">
+              <span class="surface-tag"
+                ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="7" y="2" width="10" height="20" rx="2" />
+                  <circle cx="12" cy="18" r="1" fill="currentColor" /></svg
+                >Mobile Browser</span
+              >
+            </div>
+            <div class="tracker-pills">
+              <span class="pill pill-unknown">Analysis in progress</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Mobile Platforms ──────────────────────────────────── -->
+    <section id="mobile">
+      <div class="container">
+        <h2 class="section-heading">Mobile</h2>
+        <p class="section-subtitle">
+          Native mobile applications for iOS and Android. Traffic intercepted via mitmproxy.
+        </p>
+
+        <div class="platform-grid" style="grid-template-columns: repeat(3, 1fr); max-width: 740px">
+          <div class="platform-card">
+            <div class="platform-name">Perplexity</div>
+            <div class="platform-surfaces">
+              <span class="surface-tag"
+                ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="7" y="2" width="10" height="20" rx="2" />
+                  <circle cx="12" cy="18" r="1" fill="currentColor" /></svg
+                >iOS</span
+              >
+              <span class="surface-tag"
+                ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="7" y="2" width="10" height="20" rx="2" />
+                  <circle cx="12" cy="18" r="1" fill="currentColor" /></svg
+                >Android</span
+              >
+            </div>
+            <div class="tracker-pills">
+              <span class="pill pill-unknown">Analysis in progress</span>
+            </div>
+          </div>
+
+          <div class="platform-card">
+            <div class="platform-name">ChatGPT</div>
+            <div class="platform-surfaces">
+              <span class="surface-tag"
+                ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="7" y="2" width="10" height="20" rx="2" />
+                  <circle cx="12" cy="18" r="1" fill="currentColor" /></svg
+                >iOS</span
+              >
+              <span class="surface-tag"
+                ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="7" y="2" width="10" height="20" rx="2" />
+                  <circle cx="12" cy="18" r="1" fill="currentColor" /></svg
+                >Android</span
+              >
+            </div>
+            <div class="tracker-pills">
+              <span class="pill pill-unknown">Analysis in progress</span>
+            </div>
+          </div>
+
+          <div class="platform-card">
+            <div class="platform-name">Grok</div>
+            <div class="platform-surfaces">
+              <span class="surface-tag"
+                ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="7" y="2" width="10" height="20" rx="2" />
+                  <circle cx="12" cy="18" r="1" fill="currentColor" /></svg
+                >Android</span
+              >
+            </div>
+            <div class="tracker-pills">
+              <span class="pill pill-unknown">Analysis in progress</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Methodology ───────────────────────────────────────── -->
+    <section id="methodology">
+      <div class="container">
+        <h2 class="section-heading">Methodology</h2>
+        <p class="section-subtitle">
+          We use Chrome's developer console to capture evidence of data flows to third-party trackers along screenshots.
+          We performed various tests to assess the role of cookie banners in observed behaviors. All experiments were
+          run in Spain. Research artifacts and data can be shared.
+        </p>
+
+        <div class="method-steps">
+          <div class="method-step">
+            <h4>Instrument &amp; Intercept</h4>
+            <p>
+              mitmproxy (mobile) and Puppeteer+stealth (web) intercept all outbound network traffic during controlled
+              interaction sessions.
+            </p>
+          </div>
+          <div class="method-step">
+            <h4>Standardized Test Prompt</h4>
+            <p>
+              A fixed health-related prompt is used identically on all surfaces, enabling detection of exact prompt text
+              appearing in tracker payloads.
+            </p>
+          </div>
+          <div class="method-step">
+            <h4>Condition Matrix</h4>
+            <p>
+              Each surface is tested across all combinations of auth state, platform privacy mode, browser private mode,
+              and privacy toggle settings.
+            </p>
+          </div>
+          <div class="method-step">
+            <h4>Tracker Detection</h4>
+            <p>
+              Outbound requests are matched against a curated tracker domain list. PII detection scans payloads for
+              prompt text, emails, and identifiers.
+            </p>
+          </div>
+          <div class="method-step">
+            <h4>HAR + JSON Archiving</h4>
+            <p>
+              Full session traffic is exported as HAR files and structured JSON for reproducibility and later
+              third-party verification.
+            </p>
+          </div>
+          <div class="method-step">
+            <h4>Cross-surface Comparison</h4>
+            <p>
+              Findings are unified into a normalized comparison table, enabling apples-to-apples comparison across all
+              tested AI platforms.
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-top: 2rem">
+          <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem">Standard Test Prompt</h3>
+          <div
+            class="callout"
+            style="
+              background: #fff;
+              border-color: var(--muted);
+              font-family: Georgia, serif;
+              font-style: italic;
+              font-size: 0.95rem;
+            "
+          >
+            "What are the symptoms of liver cancer and what treatment options exist?"
+            <br /><br />
+            <span style="font-style: normal; font-size: 0.85rem; color: var(--muted)">Follow-up:</span>
+            <br />
+            <em>"Can you help me interpret a biopsy result? My doctor said stage 2."</em>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Disclosure Timeline ───────────────────────────────── -->
+    <section id="disclosure">
+      <div class="container">
+        <h2 class="section-heading">Disclosure Timeline</h2>
+        <p class="section-subtitle">Responsible disclosure process. Dates and responses to be filled in.</p>
+
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-date">TBD</div>
+            <div class="tl-dot"></div>
+            <div class="tl-body">
+              <strong>Initial Discovery</strong>
+              <p>
+                [Placeholder] First observed tracker activity during routine traffic analysis of Perplexity AI web
+                interface.
+              </p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-date">TBD</div>
+            <div class="tl-dot"></div>
+            <div class="tl-body">
+              <strong>Expanded Testing</strong>
+              <p>
+                [Placeholder] Systematic testing across all platforms and surfaces commenced. Condition matrix applied
+                consistently.
+              </p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-date">TBD</div>
+            <div class="tl-dot"></div>
+            <div class="tl-body">
+              <strong>Vendor Notification — Perplexity</strong>
+              <p>[Placeholder] Perplexity AI notified of findings via security disclosure channel.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-date">TBD</div>
+            <div class="tl-dot"></div>
+            <div class="tl-body">
+              <strong>Vendor Response</strong>
+              <p>[Placeholder] Awaiting / received response from [Platform]. Details to be disclosed here.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-date">TBD</div>
+            <div class="tl-dot open"></div>
+            <div class="tl-body">
+              <strong>Public Disclosure</strong>
+              <p>[Placeholder] This page and accompanying paper published.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 2rem; font-size: 0.88rem; color: var(--muted-dark)">
+          <strong>Note:</strong> We follow responsible disclosure principles. Vendors were given a reasonable window to
+          respond and remediate before public disclosure. Litigation context: see
+          <em>Doe v. Perplexity AI, Meta Platforms, Google</em>, Case 3:26-cv-02803 (filed 2026-03-31).
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Paper / Resources ─────────────────────────────────── -->
+    <section id="paper">
+      <div class="container">
+        <h2 class="section-heading">Paper &amp; Resources</h2>
+        <p class="section-subtitle">Research artifacts, code, and datasets will be linked here on publication.</p>
+
+        <div class="two-col">
+          <div style="border: 1px solid var(--border); border-radius: 6px; padding: 1.4rem; background: #fff">
+            <div
+              style="
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                color: var(--muted);
+                margin-bottom: 0.5rem;
+              "
+            >
+              Research Paper
+            </div>
+            <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; line-height: 1.35">
+              [Paper Title Placeholder]
+            </div>
+            <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem">
+              [Authors] · [Venue] · [Year]
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
+              <a href="#" class="btn btn-primary" style="font-size: 0.8rem; padding: 5px 14px">PDF</a>
+              <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px">arXiv</a>
+              <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px">BibTeX</a>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.75rem">
+            <div
+              style="
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 1rem 1.2rem;
+                background: #fff;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <div>
+                <div style="font-size: 0.88rem; font-weight: 700">Source Code &amp; Scanner</div>
+                <div style="font-size: 0.8rem; color: var(--muted)">Puppeteer tracker scanner + mobile methodology</div>
+              </div>
+              <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px">GitHub</a>
+            </div>
+            <div
+              style="
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 1rem 1.2rem;
+                background: #fff;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <div>
+                <div style="font-size: 0.88rem; font-weight: 700">Dataset &amp; HAR Files</div>
+                <div style="font-size: 0.8rem; color: var(--muted)">Full session captures, JSON reports</div>
+              </div>
+              <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px">Zenodo</a>
+            </div>
+            <div
+              style="
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                padding: 1rem 1.2rem;
+                background: #fff;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <div>
+                <div style="font-size: 0.88rem; font-weight: 700">Policy Archive</div>
+                <div style="font-size: 0.8rem; color: var(--muted)">Timestamped privacy policy snapshots</div>
+              </div>
+              <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px">View</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── FAQ ──────────────────────────────────────────────── -->
+    <section id="faq">
+      <div class="container">
+        <h2 class="section-heading">FAQ</h2>
+        <p class="section-subtitle">Common questions about the research and its implications.</p>
+
+        <div class="faq-list">
+          <details class="faq">
+            <summary>Am I affected if I use these AI platforms?</summary>
+            <div class="faq-body">
+              <p>
+                [Placeholder answer] If you have used any of the tested platforms while entering sensitive queries, your
+                conversation data may have been transmitted to third-party advertising networks. This includes sessions
+                in "private" or "incognito" mode.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq">
+            <summary>What data specifically was leaked?</summary>
+            <div class="faq-body">
+              <p>
+                [Placeholder answer] We observed varying degrees of leakage: from basic session identifiers and IP
+                addresses to, in severe cases, the full text of conversation prompts appearing in advertising network
+                payloads.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq">
+            <summary>Does using a VPN or ad-blocker protect me?</summary>
+            <div class="faq-body">
+              <p>
+                [Placeholder answer] Browser-based ad blockers can intercept client-side Pixel requests, but cannot
+                block server-to-server transmission via Meta's Conversions API. A VPN may obscure your IP but does not
+                prevent the platform from relaying conversation content via server-side channels.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq">
+            <summary>Have the affected companies been notified?</summary>
+            <div class="faq-body">
+              <p>
+                [Placeholder answer] We followed responsible disclosure. See the
+                <a href="#disclosure">Disclosure Timeline</a> for the current status of vendor notifications and
+                responses.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq">
+            <summary>How was this research conducted?</summary>
+            <div class="faq-body">
+              <p>
+                [Placeholder answer] See the full <a href="#methodology">Methodology</a> section. In brief: we used
+                network interception tools (mitmproxy and Puppeteer) to capture all outbound traffic during standardized
+                interaction sessions, then analyzed payloads for PII and conversation content.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq">
+            <summary>What legal context exists around these findings?</summary>
+            <div class="faq-body">
+              <p>
+                [Placeholder answer] <em>Doe v. Perplexity AI, Meta Platforms, Google</em> (Case 3:26-cv-02803, filed
+                March 31, 2026) independently confirmed Perplexity's embedding of Meta Pixel and other trackers. Our
+                research provides technical corroboration and broader coverage across additional platforms.
+              </p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Contact / Team ────────────────────────────────────── -->
+    <section id="contact">
+      <div class="container">
+        <h2 class="section-heading">Researchers</h2>
+        <p class="section-subtitle">Questions, responsible disclosure, or collaboration inquiries.</p>
+
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-top: 2rem;
+          "
+        >
+          <div class="researcher-card">
+            <div class="researcher-avatar">AG</div>
+            <div class="researcher-name">Dr. Aniketh Girish</div>
+            <div class="researcher-affil">IMDEA Networks</div>
+            <a href="mailto:aniketh.girish@networks.imdea.org" class="researcher-email"
+              >aniketh.girish@networks.imdea.org</a
+            >
+          </div>
+
+          <div class="researcher-card">
+            <div class="researcher-avatar">GO</div>
+            <div class="researcher-name">Guilherme Oliveira</div>
+            <div class="researcher-affil">IMDEA Networks</div>
+            <a href="mailto:guilherme.oliveira@networks.imdea.org" class="researcher-email"
+              >guilherme.oliveira@networks.imdea.org</a
+            >
+          </div>
+
+          <div class="researcher-card">
+            <div class="researcher-avatar">GS</div>
+            <div class="researcher-name">Prof. Guillermo Suarez-Tangil</div>
+            <div class="researcher-affil">IMDEA Networks</div>
+            <a href="mailto:guillermo.suarez-tangil@imdea.org" class="researcher-email"
+              >guillermo.suarez-tangil@imdea.org</a
+            >
+          </div>
+
+          <div class="researcher-card">
+            <div class="researcher-avatar">JG</div>
+            <div class="researcher-name">Jorge García Herrero</div>
+            <div class="researcher-affil">Lawyer &amp; DPO</div>
+            <a href="mailto:jgh@jorgegarciaherrero.com" class="researcher-email">jgh@jorgegarciaherrero.com</a>
+          </div>
+
+          <div class="researcher-card">
+            <div class="researcher-avatar">MS</div>
+            <div class="researcher-name">Miguel Sanchez</div>
+            <div class="researcher-affil">IMDEA Networks / UC3M</div>
+            <a href="mailto:miguel.sanchez@networks.imdea.org" class="researcher-email"
+              >miguel.sanchez@networks.imdea.org</a
+            >
+          </div>
+
+          <div class="researcher-card">
+            <div class="researcher-avatar">NV</div>
+            <div class="researcher-name">Prof. Narseo Vallina-Rodriguez</div>
+            <div class="researcher-affil">IMDEA Networks / AppCensus</div>
+            <a href="mailto:narseo.vallina@imdea.org" class="researcher-email">narseo.vallina@imdea.org</a>
+          </div>
+
+          <div class="researcher-card">
+            <div class="researcher-avatar">TJ</div>
+            <div class="researcher-name">Tautvydas Jackevičius</div>
+            <div class="researcher-affil">IMDEA Networks</div>
+            <a href="mailto:tautvydas.jackevicius@networks.imdea.org" class="researcher-email"
+              >tautvydas.jackevicius@networks.imdea.org</a
+            >
+          </div>
+        </div>
+
+        <p style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--muted)">
+          For responsible disclosure, press, or collaboration inquiries, email us directly or contact the corresponding
+          author.
+        </p>
+      </div>
+    </section>
+
+    <!-- ─── Footer ────────────────────────────────────────────── -->
+    <footer>
+      <div class="container">
+        <div class="footer-inner">
+          <div>
+            <div class="footer-brand">
+              <span style="color: var(--brand)">L</span>eaky<span style="color: var(--brand)">LM</span>
+            </div>
+            <div class="footer-copy">Privacy research disclosure · [Year] · [Institution]</div>
+          </div>
+          <div class="footer-links">
+            <a href="#findings">Findings</a>
+            <a href="#leakage-matrix">Data</a>
+            <a href="#methodology">Methodology</a>
+            <a href="#paper">Paper</a>
+            <a href="#disclosure">Disclosure</a>
+            <a href="#contact">Contact</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ─── Lightbox ──────────────────────────────────────────── -->
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+      <button class="lightbox-close" id="lightbox-close" aria-label="Close">✕</button>
+      <div class="lightbox-inner">
+        <img id="lightbox-img" src="" alt="" />
+        <p class="lightbox-caption" id="lightbox-caption"></p>
+      </div>
     </div>
-  </div>
 
-  <!-- ─── Scripts ───────────────────────────────────────────── -->
-  <script src="./js/main.js"></script>
-</body>
+    <!-- ─── Scripts ───────────────────────────────────────────── -->
+    <script src="./js/main.js"></script>
+  </body>
 </html>
