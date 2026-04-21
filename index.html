@@ -40,9 +40,6 @@
           <a href="#faq">FAQ</a>
           <a href="#contact">Contact</a>
         </div>
-        <div class="nav-ext">
-          <a href="#paper">Read Paper</a>
-        </div>
       </div>
     </nav>
 
@@ -63,8 +60,6 @@
             </p>
             <div class="hero-actions">
               <a href="#leakage-matrix" class="btn btn-primary">See the Evidence</a>
-              <a href="#paper" class="btn btn-outline">Read the Paper</a>
-              <a href="#methodology" class="btn btn-neutral">Methodology</a>
             </div>
           </div>
 
@@ -1181,31 +1176,81 @@
             <summary>Am I affected if I use these AI platforms?</summary>
             <div class="faq-body">
               <p>
-                [Placeholder answer] If you have used any of the tested platforms while entering sensitive queries, your
-                conversation data may have been transmitted to third-party advertising networks. This includes sessions
-                in "private" or "incognito" mode.
+                If you have used Perplexity (before April 3rd, 2026), Grok, Claude, or ChatGPT while logged in, your
+                conversation URLs and potentially identifying data — such as email hashes and advertising cookies — were
+                transmitted to third-party networks including Meta, Google, and TikTok. This applies regardless of
+                whether you used private or incognito mode. Perplexity removed the Meta Pixel following a US class
+                action filed in March 2026.
               </p>
             </div>
           </details>
 
           <details class="faq">
-            <summary>What data specifically was leaked?</summary>
+            <summary>What is a conversation permalink and why does it matter?</summary>
             <div class="faq-body">
               <p>
-                [Placeholder answer] We observed varying degrees of leakage: from basic session identifiers and IP
-                addresses to, in severe cases, the full text of conversation prompts appearing in advertising network
-                payloads.
+                A permalink is a stable, permanent URL pointing to a specific conversation — for example,
+                <code>grok.com/share/abc123</code>. Several platforms make these URLs publicly accessible by default,
+                meaning anyone who knows the link can read the full conversation without logging in. When these URLs are
+                sent to third-party trackers like Meta or Google, those trackers gain the ability to access and index
+                the conversation content. This is the core risk: leaking a URL is not just metadata — it can be
+                equivalent to leaking the conversation itself.
               </p>
             </div>
           </details>
 
           <details class="faq">
-            <summary>Does using a VPN or ad-blocker protect me?</summary>
+            <summary>Are my past conversations at risk?</summary>
             <div class="faq-body">
               <p>
-                [Placeholder answer] Browser-based ad blockers can intercept client-side Pixel requests, but cannot
-                block server-to-server transmission via Meta's Conversions API. A VPN may obscure your IP but does not
-                prevent the platform from relaying conversation content via server-side channels.
+                Potentially, yes. For platforms where conversation URLs were shared with trackers and those URLs are
+                publicly accessible without login (Grok in particular), any conversation whose permalink was transmitted
+                to a third party could in principle be accessed by that party. Perplexity's guest-tier conversations
+                were fully public until the Meta Pixel was removed in April 2026. Changing privacy settings after the
+                fact does not necessarily revoke access — on Grok, a shared link remains accessible unless you
+                explicitly revoke it at the individual chat level.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq">
+            <summary>Does rejecting cookies protect me?</summary>
+            <div class="faq-body">
+              <p>
+                It helps for some trackers but not all. Rejecting non-essential cookies prevents Claude's Meta Pixel,
+                Datadog, and server-side forwarding to eleven ad platforms from firing. On Grok, TikTok, Meta Pixel,
+                and server-side GTM tracking are also gated on cookie consent. However, Grok's Google Analytics fires
+                in all circumstances regardless of cookie consent on OneTrust's forms. Claude's Intercom integration
+                sends conversation URLs unconditionally on every authenticated session, regardless of cookie choices.
+              </p>
+            </div>
+          </details>
+
+          <details class="faq">
+            <summary>How to protect myself with the settings of AI chatbots?</summary>
+            <div class="faq-body">
+              <p>
+                Steps vary by platform:
+              </p>
+              <ul style="margin-top:0.5rem; padding-left:1.2rem; list-style:disc;">
+                <li style="margin-bottom:0.4rem;"><strong>Perplexity:</strong> Set conversations to <em>Private</em> in sharing settings. Avoid sharing incognito chats — once you leave incognito mode, you cannot unshare them.</li>
+                <li style="margin-bottom:0.4rem;"><strong>Grok:</strong> Conversations are public by default. Enable access restriction in settings. If a link was already shared, revoke it explicitly at the chat level.</li>
+                <li style="margin-bottom:0.4rem;"><strong>Claude:</strong> Reject non-essential cookies to prevent Meta Pixel and Datadog from loading. Use the <a href="https://claude.ai/settings/data-privacy-controls" class="doc-link" target="_blank" rel="noopener">data privacy controls</a> to manage conversation sharing.</li>
+                <li><strong>ChatGPT:</strong> Reject cookies where possible. Note that Google Analytics tracking of conversation URLs fires for free logged-in users regardless of cookie consent.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="faq">
+            <summary>Does using an ad-blocker protect me?</summary>
+            <div class="faq-body">
+              <p>
+                Partially. Browser-based ad blockers can intercept client-side Pixel requests, but cannot block
+                server-to-server transmission. Claude forwards user events from Anthropic's infrastructure to eleven
+                ad platforms — including Meta, LinkedIn, TikTok, and Google — entirely server-side, invisible to the
+                browser. Grok's server-side GTM also relays data to Meta and TikTok server-to-server after 3 messages
+                in a session. Additionally, Claude proxies Segment analytics through a first-party domain
+                (<code>a-cdn.anthropic.com</code>), bypassing hostname-based blockers entirely.
               </p>
             </div>
           </details>
@@ -1214,34 +1259,12 @@
             <summary>Have the affected companies been notified?</summary>
             <div class="faq-body">
               <p>
-                [Placeholder answer] We followed responsible disclosure. See the
-                <a href="#disclosure">Disclosure Timeline</a> for the current status of vendor notifications and
-                responses.
+                We followed responsible disclosure principles. See the <a href="#disclosure">Disclosure Timeline</a>
+                for the current status of vendor notifications and responses.
               </p>
             </div>
           </details>
 
-          <details class="faq">
-            <summary>How was this research conducted?</summary>
-            <div class="faq-body">
-              <p>
-                [Placeholder answer] See the full <a href="#methodology">Methodology</a> section. In brief: we used
-                network interception tools (mitmproxy and Puppeteer) to capture all outbound traffic during standardized
-                interaction sessions, then analyzed payloads for PII and conversation content.
-              </p>
-            </div>
-          </details>
-
-          <details class="faq">
-            <summary>What legal context exists around these findings?</summary>
-            <div class="faq-body">
-              <p>
-                [Placeholder answer] <em>Doe v. Perplexity AI, Meta Platforms, Google</em> (Case 3:26-cv-02803, filed
-                March 31, 2026) independently confirmed Perplexity's embedding of Meta Pixel and other trackers. Our
-                research provides technical corroboration and broader coverage across additional platforms.
-              </p>
-            </div>
-          </details>
         </div>
       </div>
     </section>
@@ -1335,7 +1358,7 @@
             <div class="footer-brand">
               <span style="color: var(--brand)">L</span>eaky<span style="color: var(--brand)">LM</span>
             </div>
-            <div class="footer-copy">Privacy research disclosure · [Year] · [Institution]</div>
+            <div class="footer-copy">Privacy research disclosure · 2026 · IMDEA Networks</div>
           </div>
           <div class="footer-links">
             <a href="#findings">Findings</a>
