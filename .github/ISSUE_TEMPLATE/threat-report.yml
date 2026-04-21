@@ -1,0 +1,151 @@
+name: Threat Scenario Report
+description: Submit a privacy threat scenario you have observed in an AI assistant. Help us build a comprehensive picture of how LLM services handle user data.
+title: "[Threat] "
+labels: ["threat-report", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for contributing to this living research effort. Reports from the community help us document the full scope of privacy risks in AI assistants.
+        Please fill in as much detail as you can — partial reports are welcome too.
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform(s) affected
+      multiple: true
+      options:
+        - Perplexity
+        - Anthropic Claude
+        - OpenAI ChatGPT
+        - xAI Grok
+        - Perplexity Comet (browser)
+        - Atlas Browser
+        - Meta AI
+        - Microsoft Copilot
+        - Google Gemini
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      multiple: true
+      options:
+        - Web (browser)
+        - iOS app
+        - Android app
+        - Desktop app
+        - API
+        - Browser extension
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: finding-type
+    attributes:
+      label: Type of finding
+      multiple: true
+      options:
+        - Third-party tracker present
+        - Conversation URL / permalink leaked
+        - Prompt or conversation content leaked
+        - PII leaked (email, name, etc.)
+        - Cookie / identifier syncing
+        - Server-side tracking (evades ad blockers)
+        - Weak or misleading access control
+        - Cookie consent bypass
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the threat scenario
+      description: What did you observe? What data flows to where, and under what conditions?
+      placeholder: |
+        e.g. When I open a new chat on [platform], a request is sent to analytics.example.com containing the full conversation URL and a cookie that links to my account.
+    validations:
+      required: true
+
+  - type: textarea
+    id: conditions
+    attributes:
+      label: Conditions
+      description: Under what conditions does this occur? Check all that apply and add any notes.
+      placeholder: |
+        - Auth state: logged in / guest / both
+        - Cookie consent: accepted / rejected / not shown
+        - Account tier: free / paid / not applicable
+        - Privacy mode: on / off / not applicable
+        - Reproducible: yes / sometimes / once
+    validations:
+      required: false
+
+  - type: textarea
+    id: data-leaked
+    attributes:
+      label: Data involved
+      description: What specific data did you observe being transmitted?
+      placeholder: |
+        e.g. full conversation URL, _fbp cookie, SHA-256 email hash, page title containing chat topic...
+    validations:
+      required: false
+
+  - type: textarea
+    id: third-party
+    attributes:
+      label: Third party receiving the data
+      description: Which tracker, analytics service, or advertising platform receives this data?
+      placeholder: e.g. Meta Pixel (fbevents.js), Google Analytics (gtag), TikTok Pixel...
+    validations:
+      required: false
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Attach HAR files, screenshots, network request dumps, or links to archived network traffic. Redact any personal data before sharing.
+      placeholder: Drag and drop files here, or paste a link to an archive / Wayback Machine snapshot.
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Why does this matter? (optional)
+      description: What is the privacy impact in your view? Who is at risk and how?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: gdpr-concern
+    attributes:
+      label: Potential regulatory concern
+      multiple: true
+      options:
+        - GDPR – data minimisation (Art. 5)
+        - GDPR – lawful basis (Art. 6)
+        - GDPR – special categories (Art. 9)
+        - GDPR – transparency / consent (Art. 13/14)
+        - ePrivacy Directive – cookie consent
+        - CCPA / US privacy law
+        - DMA (Art. 5.2)
+        - Unsure
+        - Not applicable
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Before you submit
+      options:
+        - label: I have not included any personal data of third parties in this report.
+          required: true
+        - label: I am submitting this in good faith for research and public interest purposes.
+          required: true
