@@ -30,7 +30,6 @@
           <a href="#findings">Findings</a>
           <a href="#permalink-visibility">Access Control</a>
           <a href="#leakage-matrix">Leakage Matrix</a>
-          <a href="#methodology">Methodology</a>
           <span class="nav-divider"></span>
           <a href="#web">Web</a>
           <a href="#browser">Browser</a>
@@ -822,6 +821,10 @@
             </figure>
           </div>
         </div>
+
+        <div class="method-callout">
+          <strong>How we tested.</strong> Chrome's developer console (Network tab) used to capture all outbound requests. Each platform tested across combinations of auth state (guest / logged-in), cookie consent (accepted / rejected), account tier, and privacy mode. Full session traffic exported as HAR files. A fixed health-related prompt was submitted identically on all platforms: <em>"What are the symptoms of liver cancer and what treatment options exist?"</em>
+        </div>
       </div>
     </section>
 
@@ -863,6 +866,10 @@
               <span class="pill pill-unknown">Analysis in progress</span>
             </div>
           </div>
+        </div>
+
+        <div class="method-callout">
+          <strong>How we tested.</strong> Analysis in progress. Traffic interception methodology follows the same approach as the web surface using Chrome's developer console, adapted for browser-embedded LLM interfaces.
         </div>
       </div>
     </section>
@@ -933,10 +940,15 @@
             </div>
           </div>
         </div>
+
+        <div class="method-callout">
+          <strong>How we tested.</strong> mitmproxy used to intercept all outbound HTTPS traffic from iOS and Android apps. Each app tested across auth state, OS-level privacy settings, and in-app privacy toggle combinations. The same fixed health-related prompt used across all surfaces. Captured traffic exported as structured JSON.
+        </div>
       </div>
     </section>
 
     <!-- ─── Methodology ───────────────────────────────────────── -->
+    <!--
     <section id="methodology">
       <div class="container">
         <h2 class="section-heading">Methodology</h2>
@@ -945,64 +957,23 @@
           We performed various tests to assess the role of cookie banners in observed behaviors. All experiments were
           run in Spain. Research artifacts and data can be shared.
         </p>
-
-        <div class="method-steps">
+        <div class="method-steps" style="margin-top:1.5rem;">
           <div class="method-step">
-            <h4>Instrument &amp; Intercept</h4>
-            <p>
-              mitmproxy (mobile) and Puppeteer+stealth (web) intercept all outbound network traffic during controlled
-              interaction sessions.
-            </p>
-          </div>
-          <div class="method-step">
-            <h4>Standardized Test Prompt</h4>
-            <p>
-              A fixed health-related prompt is used identically on all surfaces, enabling detection of exact prompt text
-              appearing in tracker payloads.
-            </p>
+            <h4>Tracker Detection</h4>
+            <p>Outbound requests matched against a curated tracker domain list. PII detection scans payloads for conversation URLs, emails, and identifiers.</p>
           </div>
           <div class="method-step">
             <h4>Condition Matrix</h4>
-            <p>
-              Each surface is tested across all combinations of auth state, platform privacy mode, browser private mode,
-              and privacy toggle settings.
-            </p>
+            <p>Each surface tested across combinations of auth state, cookie consent, account tier, and privacy mode settings.</p>
           </div>
           <div class="method-step">
-            <h4>Tracker Detection</h4>
-            <p>
-              Outbound requests are matched against a curated tracker domain list. PII detection scans payloads for
-              prompt text, emails, and identifiers.
-            </p>
-          </div>
-          <div class="method-step">
-            <h4>HAR + JSON Archiving</h4>
-            <p>
-              Full session traffic is exported as HAR files and structured JSON for reproducibility and later
-              third-party verification.
-            </p>
-          </div>
-          <div class="method-step">
-            <h4>Cross-surface Comparison</h4>
-            <p>
-              Findings are unified into a normalized comparison table, enabling apples-to-apples comparison across all
-              tested AI platforms.
-            </p>
+            <h4>Traffic Archiving</h4>
+            <p>Full session traffic exported as HAR files and structured JSON for reproducibility and third-party verification.</p>
           </div>
         </div>
-
         <div style="margin-top: 2rem">
           <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem">Standard Test Prompt</h3>
-          <div
-            class="callout"
-            style="
-              background: #fff;
-              border-color: var(--muted);
-              font-family: Georgia, serif;
-              font-style: italic;
-              font-size: 0.95rem;
-            "
-          >
+          <div class="callout" style="background: #fff; border-color: var(--muted); font-family: Georgia, serif; font-style: italic; font-size: 0.95rem;">
             "What are the symptoms of liver cancer and what treatment options exist?"
             <br /><br />
             <span style="font-style: normal; font-size: 0.85rem; color: var(--muted)">Follow-up:</span>
@@ -1012,6 +983,7 @@
         </div>
       </div>
     </section>
+    -->
 
     <!-- ─── Disclosure Timeline ───────────────────────────────── -->
     <section id="disclosure">
@@ -1123,7 +1095,7 @@
             >
               <div>
                 <div style="font-size: 0.88rem; font-weight: 700">Source Code &amp; Scanner</div>
-                <div style="font-size: 0.8rem; color: var(--muted)">Puppeteer tracker scanner + mobile methodology</div>
+                <div style="font-size: 0.8rem; color: var(--muted)">Tracker scanner + mobile methodology</div>
               </div>
               <a href="#" class="btn btn-neutral" style="font-size: 0.8rem; padding: 5px 14px">GitHub</a>
             </div>
@@ -1278,7 +1250,7 @@
 
         <div style="margin-bottom: 2rem;">
           <p style="font-size:0.95rem; color:var(--muted-dark); margin-bottom:1rem;">
-            This is a living document. If you have observed a privacy threat scenario in an AI assistant that is not covered here, we'd love to hear about it — help us crowdsource the full picture.
+            This is a living document maintained in the public interest. If you have observed a privacy threat scenario in an AI assistant that is not covered here, we welcome reports from researchers, journalists, and members of the public.
           </p>
           <a href="https://github.com/PLACEHOLDER/leakyllm/issues/new?template=threat-report.yml" target="_blank" rel="noopener" class="btn btn-primary">
             Report a Finding
