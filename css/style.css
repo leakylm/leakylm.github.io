@@ -786,6 +786,24 @@ details.faq .faq-body p {
   }
 }
 
+/* ─── Researcher Grid ───────────────────────────────────────── */
+.researcher-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+.researcher-row {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+.researcher-row .researcher-card {
+  width: 210px;
+  flex-shrink: 0;
+}
+
 /* ─── Researcher Cards ──────────────────────────────────────── */
 .researcher-card {
   background: #fff;
