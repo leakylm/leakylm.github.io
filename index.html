@@ -32,8 +32,6 @@
           <a href="#leakage-matrix">Leakage Matrix</a>
           <span class="nav-divider"></span>
           <a href="#web">Web</a>
-          <a href="#browser">Browser</a>
-          <a href="#mobile">Mobile</a>
           <span class="nav-divider"></span>
           <a href="#disclosure">Disclosure</a>
           <a href="#faq">FAQ</a>
@@ -673,8 +671,8 @@
     <!-- ─── Web Platforms ────────────────────────────────────── -->
     <section id="web">
       <div class="container">
-        <h2 class="section-heading">Web</h2>
-        <p class="section-subtitle">Findings from web browser sessions across the four tested LLM platforms.</p>
+        <h2 class="section-heading">Web Platforms</h2>
+        <p class="section-subtitle">All four platforms embed third-party tracking scripts in their web interfaces. Conversation URLs, page titles, and user identifiers are transmitted to ad networks — in several cases regardless of cookie consent.</p>
 
         <div class="web-layout">
           <div class="web-main">
@@ -769,36 +767,49 @@
             </p>
           </div>
 
-          <div class="web-figures">
-            <figure class="research-figure research-figure--small">
-              <div
-                class="figure-img-wrap"
-                data-lightbox
-                data-caption="<strong>Figure 1.</strong> Screenshot showing the leak of conversation permalinks to Meta on Perplexity (top left) and to Google Analytics on Grok (top right) along the title of the conversation which contains metadata about the conversion topic. Perplexity discontinued this feature after a class action was filed in the USA in April 2026. At the bottom, we show how the Grok permalink can be accessed from another browser in incognito mode without logging."
-              >
-                <img
-                  src="assets/img/figure1.png"
-                  alt="Figure 1: leak of conversation permalinks to Meta and Google Analytics"
-                  loading="lazy"
-                />
-              </div>
-              <figcaption>
-                <span class="fig-label">Fig. 1</span> Permalink leakage to Meta (Perplexity) and Google Analytics
-                (Grok).
-              </figcaption>
-            </figure>
-            <figure class="research-figure research-figure--small">
-              <div
-                class="figure-img-wrap"
-                data-lightbox
-                data-caption="<strong>Figure 2.</strong> Cookie consent forms for Claude, Grok (through OneTrust), ChatGPT, and Perplexity."
-              >
-                <img src="assets/img/figure2.png" alt="Figure 2: Cookie consent forms" loading="lazy" />
-              </div>
-              <figcaption><span class="fig-label">Fig. 2</span> Cookie consent forms across platforms.</figcaption>
-            </figure>
-          </div>
         </div>
+
+        <figure class="research-figure" style="margin-top: 2rem;">
+          <div class="figure-img-wrap" data-lightbox data-caption="<strong>Figure 1.</strong> Screenshot showing the leak of conversation permalinks to Meta on Perplexity (top left) and to Google Analytics on Grok (top right) along the title of the conversation which contains metadata about the conversation topic. Perplexity discontinued this feature after a class action was filed in the USA in April 2026. At the bottom, we show how the Grok permalink can be accessed from another browser in incognito mode without logging.">
+            <img src="assets/img/figure1.png" alt="Figure 1: leak of conversation permalinks to Meta and Google Analytics" loading="lazy" />
+          </div>
+          <figcaption>
+            <span class="fig-label">Fig. 1</span> Permalink leakage to Meta (Perplexity) and Google Analytics (Grok). Conversation URLs are transmitted as page events, exposing the chat topic via the URL slug.
+          </figcaption>
+        </figure>
+
+        <figure class="consent-figure">
+          <p class="consent-figure-lead">All four platforms present a cookie consent interface — yet tracking was observed in multiple conditions regardless of consent. The highlighted area in each screenshot marks the persistent cookie banner co-present with the popup.</p>
+          <div class="consent-grid">
+            <div class="consent-col">
+              <div class="consent-platform-label">Claude</div>
+              <div class="figure-img-wrap" data-lightbox data-caption="<strong>Claude</strong> — Cookie consent popup modal. The dashed box highlights the cookie banner present on the page.">
+                <img src="assets/img/consent-screens/annotated/claude-cookie-popup.png" alt="Claude cookie consent popup" loading="lazy" />
+              </div>
+            </div>
+            <div class="consent-col">
+              <div class="consent-platform-label">ChatGPT</div>
+              <div class="figure-img-wrap" data-lightbox data-caption="<strong>ChatGPT</strong> — Cookie consent popup modal. The dashed box highlights the cookie banner present on the page.">
+                <img src="assets/img/consent-screens/annotated/chatgpt-cookie-popup.png" alt="ChatGPT cookie consent popup" loading="lazy" />
+              </div>
+            </div>
+            <div class="consent-col">
+              <div class="consent-platform-label">Grok</div>
+              <div class="figure-img-wrap" data-lightbox data-caption="<strong>Grok</strong> — Cookie consent popup modal (via OneTrust). The dashed box highlights the cookie banner present on the page.">
+                <img src="assets/img/consent-screens/annotated/grok-cookie-popup.png" alt="Grok cookie consent popup" loading="lazy" />
+              </div>
+            </div>
+            <div class="consent-col">
+              <div class="consent-platform-label">Perplexity</div>
+              <div class="figure-img-wrap" data-lightbox data-caption="<strong>Perplexity</strong> — Cookie consent popup modal. The dashed box highlights the cookie banner present on the page.">
+                <img src="assets/img/consent-screens/annotated/perplexity-cookie-popup.png" alt="Perplexity cookie consent popup" loading="lazy" />
+              </div>
+            </div>
+          </div>
+          <figcaption>
+            <span class="fig-label">Fig. 2</span> Cookie consent interfaces across platforms. The red dashed box marks the persistent cookie banner visible alongside the popup modal.
+          </figcaption>
+        </figure>
 
         <div class="method-callout">
           <strong>How we tested.</strong> Chrome's developer console (Network tab) used to capture all outbound requests. Each platform tested across combinations of auth state (guest / logged-in), cookie consent (accepted / rejected), account tier, and privacy mode. Full session traffic exported as HAR files. A fixed health-related prompt was submitted identically on all platforms: <em>"What are the symptoms of liver cancer and what treatment options exist?"</em>
@@ -806,7 +817,7 @@
       </div>
     </section>
 
-    <!-- ─── Browser Platforms ─────────────────────────────────── -->
+    <!-- ─── Browser Platforms (hidden – releasing later) ────────
     <section id="browser">
       <div class="container">
         <h2 class="section-heading">Browser</h2>
@@ -851,8 +862,9 @@
         </div>
       </div>
     </section>
+    ──────────────────────────────────────────────────────────── -->
 
-    <!-- ─── Mobile Platforms ──────────────────────────────────── -->
+    <!-- ─── Mobile Platforms (hidden – releasing later) ─────────
     <section id="mobile">
       <div class="container">
         <h2 class="section-heading">Mobile</h2>
@@ -924,6 +936,7 @@
         </div>
       </div>
     </section>
+    ──────────────────────────────────────────────────────────── -->
 
     <!-- ─── Methodology ───────────────────────────────────────── -->
     <!--
