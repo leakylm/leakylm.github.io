@@ -50,35 +50,41 @@
           Research Disclosure
         </div>
         <div class="hero-body">
-          <div class="hero-text">
-            <h1>Your AI Assistant Is <em>Leaking</em> Your Conversations</h1>
-            <p class="hero-lead">
-              We disclose structural privacy risks in prominent generative AI products — Perplexity, Anthropic's Claude,
-              xAI's Grok, and OpenAI's ChatGPT — caused by third-party trackers embedded in LLM services that leak user
-              conversations, identities, and sensitive metadata.
-            </p>
-            <div class="hero-actions">
-              <a href="#leakage-matrix" class="btn btn-primary">See the Evidence</a>
-              <a href="https://github.com/PLACEHOLDER/leakyllm/issues/new?template=threat-report.yml" target="_blank" rel="noopener" class="btn btn-outline">Report a Finding</a>
-            </div>
-          </div>
+          <figure class="hero-figure">
+            <img src="assets/img/overview.svg" alt="Threat model diagram: a user's query flows into an LLM platform, which leaks data to Meta, Google, TikTok, and other trackers via embedded scripts" width="360" height="369">
+          </figure>
 
-          <div class="hero-stats">
-            <div class="stat-cell">
-              <span class="stat-number" data-count="4">4</span>
-              <span class="stat-label">AI Platforms Tested</span>
+          <div class="hero-right">
+            <div class="hero-text">
+              <h1>Your AI Assistant Is <em>Leaking</em> Your Conversations</h1>
+              <p class="hero-lead">
+                We disclose structural privacy risks in prominent generative AI products — Perplexity, Anthropic's Claude,
+                xAI's Grok, and OpenAI's ChatGPT — caused by third-party trackers embedded in LLM services that leak user
+                conversations, identities, and sensitive metadata.
+              </p>
+              <div class="hero-actions">
+                <a href="#leakage-matrix" class="btn btn-primary">See the Evidence</a>
+                <a href="https://github.com/PLACEHOLDER/leakyllm/issues/new?template=threat-report.yml" target="_blank" rel="noopener" class="btn btn-outline">Report a Finding</a>
+              </div>
             </div>
-            <div class="stat-cell">
-              <span class="stat-number" data-count="13">13+</span>
-              <span class="stat-label">Third-party Trackers Found</span>
-            </div>
-            <div class="stat-cell">
-              <span class="stat-number" data-count="4">4</span>
-              <span class="stat-label">Platforms Affected</span>
-            </div>
-            <div class="stat-cell">
-              <span class="stat-number" data-count="0">0</span>
-              <span class="stat-label">Disclosed to Users</span>
+
+            <div class="hero-stats">
+              <div class="stat-cell">
+                <span class="stat-number" data-count="4">4</span>
+                <span class="stat-label">AI Platforms Tested</span>
+              </div>
+              <div class="stat-cell">
+                <span class="stat-number" data-count="13">13+</span>
+                <span class="stat-label">Third-party Trackers Found</span>
+              </div>
+              <div class="stat-cell">
+                <span class="stat-number" data-count="4">4</span>
+                <span class="stat-label">Platforms Affected</span>
+              </div>
+              <div class="stat-cell">
+                <span class="stat-number" data-count="0">0</span>
+                <span class="stat-label">Disclosed to Users</span>
+              </div>
             </div>
           </div>
         </div>
@@ -176,40 +182,12 @@
           <div class="finding-card amber">
             <div class="finding-title">Potentially misleading privacy controls and privacy disclosures</div>
             <p>
-              The studied LLMs offer privacy controls to limit conversations' visibility, but in some cases, they may
-              mislead users by implying stronger protections than those which are actually enforced, potentially
-              undermining the expected privacy guarantees. Furthermore, the privacy policies of
-              <a
-                href="https://web.archive.org/web/20260409172159/https://x.ai/legal/cookie-policy"
-                class="doc-link"
-                target="_blank"
-                rel="noopener"
-                >Grok</a
-              >,
-              <a
-                href="https://web.archive.org/web/20260406164032/https://www.perplexity.ai/hub/legal/privacy-policy"
-                class="doc-link"
-                target="_blank"
-                rel="noopener"
-                >Perplexity</a
-              >,
-              <a href="https://openai.com/policies/cookie-policy/" class="doc-link" target="_blank" rel="noopener"
-                >OpenAI</a
-              >, and
-              <a
-                href="https://privacy.claude.com/en/articles/10023541-what-cookies-does-anthropic-use"
-                class="doc-link"
-                target="_blank"
-                rel="noopener"
-                >Claude</a
-              >
-              consistently confirm the collection of user conversations, usage telemetry, and metadata for first-party
-              purposes, the use of third-party cookies (e.g., Meta, Google, TikTok) for analytics and advertising, and
-              even data sharing with third parties. Yet, they do not clearly state that user conversations are shared
-              with online advertising and tracking services, relying instead on broad and ambiguous language (e.g.,
-              <em>"content you submit"</em> or <em>"business partners"</em>) that leaves uncertainty about actual data
-              flows. Cookie consent forms present transparency shortcomings about the cookies collected and their
-              purposes as Fig 2 shows.
+              The studied LLMs offer privacy controls to limit conversation visibility, but may mislead users by implying stronger protections than are actually enforced. Privacy policies of
+              <a href="https://web.archive.org/web/20260409172159/https://x.ai/legal/cookie-policy" class="doc-link" target="_blank" rel="noopener">Grok</a>,
+              <a href="https://web.archive.org/web/20260406164032/https://www.perplexity.ai/hub/legal/privacy-policy" class="doc-link" target="_blank" rel="noopener">Perplexity</a>,
+              <a href="https://openai.com/policies/cookie-policy/" class="doc-link" target="_blank" rel="noopener">OpenAI</a>, and
+              <a href="https://privacy.claude.com/en/articles/10023541-what-cookies-does-anthropic-use" class="doc-link" target="_blank" rel="noopener">Claude</a>
+              confirm the collection of user conversations, usage telemetry, and metadata for first-party purposes, the use of third-party cookies (e.g., Meta, Google, TikTok) for analytics and advertising, and data sharing with third parties. Yet, they do not clearly state that user conversations are shared with online advertising and tracking services — relying instead on broad language (e.g., <em>"content you submit"</em> or <em>"business partners"</em>) that leaves uncertainty about actual data flows. Cookie consent forms present further transparency shortcomings, as Fig. 2 shows.
             </p>
           </div>
         </div>
@@ -1043,7 +1021,7 @@
         </div>
 
         <div style="margin-top: 2rem; font-size: 0.88rem; color: var(--muted-dark)">
-          <strong>Note:</strong> We follow responsible disclosure principles. Vendors are given a reasonable window to respond and remediate before full public disclosure.
+          <strong>Note:</strong> The findings described here involve third-party analytics and advertising trackers — not exploitable vulnerabilities. Publishing this information does not enable anyone to collect user data; only the platform operators can act on it. Our goal is public awareness and giving AI companies the opportunity to address these data flows. We follow responsible disclosure principles: vendors are given a reasonable window to respond and remediate before full public disclosure.
         </div>
       </div>
     </section>

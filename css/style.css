@@ -259,15 +259,33 @@ section + section {
   margin-bottom: 0.1rem;
 }
 
-/* ─── Hero Body (two-column) ────────────────────────────────── */
+/* ─── Hero Body ─────────────────────────────────────────────── */
 .hero-body {
   display: flex;
   gap: 3rem;
   align-items: flex-start;
 }
 
-.hero-text {
+.hero-figure {
+  flex-shrink: 0;
+  width: 340px;
+}
+
+.hero-figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.hero-right {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.hero-text {
   min-width: 0;
 }
 
@@ -280,9 +298,6 @@ section + section {
   border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
-  flex-shrink: 0;
-  width: 300px;
-  align-self: center;
 }
 
 .stat-cell {
@@ -1308,8 +1323,11 @@ footer {
   .hero-body {
     flex-direction: column;
   }
-  .hero-stats {
+  .hero-figure {
     width: 100%;
+    max-width: 360px;
+  }
+  .hero-stats {
     grid-template-columns: repeat(2, 1fr);
   }
   .platform-grid {

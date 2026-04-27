@@ -1,0 +1,112 @@
+<svg width="400" height="410" viewBox="0 0 400 410" xmlns="http://www.w3.org/2000/svg" font-family="'Source Sans Pro', Helvetica, Arial, sans-serif">
+
+  <defs>
+    <marker id="arr-gray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#bbb"/>
+    </marker>
+    <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#c02a2a"/>
+    </marker>
+    <marker id="arr-red-sm" markerWidth="6" markerHeight="6" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L0,5 L6,2.5 z" fill="#c02a2a"/>
+    </marker>
+  </defs>
+
+  <!-- ═══ USER ═══════════════════════════════════════════════ -->
+  <circle cx="200" cy="44" r="26" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="1.5"/>
+  <!-- person icon -->
+  <circle cx="200" cy="36" r="9" fill="#828282"/>
+  <path d="M183,58 Q183,46 200,46 Q217,46 217,58" fill="#828282"/>
+
+  <text x="200" y="82" text-anchor="middle" font-size="10" font-weight="600" fill="#828282" letter-spacing="0.06em">USER</text>
+
+  <!-- arrow down: user → LLM -->
+  <line x1="200" y1="88" x2="200" y2="118" stroke="#bbb" stroke-width="1.5" marker-end="url(#arr-gray)"/>
+  <text x="212" y="107" font-size="8" fill="#bbb">query</text>
+
+  <!-- ═══ LLM SERVICE BOX ═══════════════════════════════════ -->
+  <rect x="18" y="122" width="364" height="154" rx="10" fill="#fff" stroke="#e8e8e8" stroke-width="1.5"/>
+
+  <!-- browser chrome -->
+  <rect x="18" y="122" width="364" height="26" rx="10" fill="#f7f7f7" stroke="#e8e8e8" stroke-width="1.5"/>
+  <rect x="18" y="136" width="364" height="12" fill="#f7f7f7"/>
+  <circle cx="38" cy="135" r="5" fill="#ffb3b3"/>
+  <circle cx="54" cy="135" r="5" fill="#ffe08a"/>
+  <circle cx="70" cy="135" r="5" fill="#b3e6c2"/>
+  <rect x="86" y="128" width="200" height="14" rx="3" fill="#ececec"/>
+  <text x="186" y="139" text-anchor="middle" font-size="8" fill="#3477ad">llm.chat/c/liver-cancer-symptoms-3xk…</text>
+
+  <!-- chat bubble: user query -->
+  <rect x="34" y="158" width="168" height="42" rx="6" fill="#f5e6e6"/>
+  <text x="44" y="173" font-size="9" fill="#555">"What are the symptoms of</text>
+  <text x="44" y="186" font-size="9" fill="#555">liver cancer?"</text>
+  <text x="44" y="196" font-size="8" fill="#bbb">You · just now</text>
+
+  <!-- LLM response lines -->
+  <rect x="34" y="208" width="168" height="7" rx="3" fill="#f5f5f5"/>
+  <rect x="34" y="219" width="140" height="7" rx="3" fill="#f5f5f5"/>
+  <rect x="34" y="230" width="155" height="7" rx="3" fill="#f5f5f5"/>
+  <rect x="34" y="241" width="110" height="7" rx="3" fill="#f5f5f5"/>
+  <text x="34" y="260" font-size="8" fill="#ccc">LLM response…</text>
+
+  <!-- divider -->
+  <line x1="222" y1="152" x2="222" y2="268" stroke="#f0f0f0" stroke-width="1"/>
+
+  <!-- embedded trackers panel -->
+  <text x="236" y="163" font-size="8" font-weight="700" fill="#c02a2a" letter-spacing="0.07em">EMBEDDED TRACKERS</text>
+
+  <circle cx="236" cy="178" r="5" fill="#fee2e2" stroke="#c02a2a" stroke-width="1.2"/>
+  <text x="246" y="182" font-size="9" fill="#333">Meta Pixel</text>
+
+  <circle cx="236" cy="198" r="5" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2"/>
+  <text x="246" y="202" font-size="9" fill="#333">Google Analytics</text>
+
+  <circle cx="236" cy="218" r="5" fill="#f0f0f0" stroke="#444" stroke-width="1.2"/>
+  <text x="246" y="222" font-size="9" fill="#333">TikTok Pixel</text>
+
+  <circle cx="236" cy="238" r="5" fill="#f3f0ff" stroke="#6d28d9" stroke-width="1.2"/>
+  <text x="246" y="242" font-size="9" fill="#333">+8 server-side</text>
+
+  <!-- LLM label -->
+  <text x="200" y="290" text-anchor="middle" font-size="9" font-weight="700" fill="#aaa" letter-spacing="0.08em">LLM PLATFORM</text>
+
+  <!-- ═══ LEAK ARROWS (LLM → trackers) ══════════════════════ -->
+  <!-- Meta -->
+  <line x1="88" y1="276" x2="68" y2="346" stroke="#c02a2a" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-red-sm)"/>
+  <!-- Google -->
+  <line x1="168" y1="276" x2="168" y2="346" stroke="#c02a2a" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-red-sm)"/>
+  <!-- TikTok -->
+  <line x1="248" y1="276" x2="268" y2="346" stroke="#c02a2a" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-red-sm)"/>
+  <!-- Server-side -->
+  <line x1="328" y1="276" x2="348" y2="346" stroke="#c02a2a" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-red-sm)"/>
+
+  <!-- data labels on arrows -->
+  <text x="28" y="316" font-size="7.5" fill="#c02a2a">URL + cookie</text>
+  <text x="112" y="316" font-size="7.5" fill="#c02a2a">URL + title</text>
+  <text x="256" y="316" font-size="7.5" fill="#c02a2a">email hash</text>
+  <text x="330" y="316" font-size="7.5" fill="#c02a2a">server-side</text>
+
+  <!-- ═══ TRACKER DESTINATION BOXES ════════════════════════ -->
+  <!-- Meta -->
+  <rect x="18" y="350" width="80" height="36" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="58" y="365" text-anchor="middle" font-size="9" font-weight="700" fill="#991b1b">Meta</text>
+  <text x="58" y="378" text-anchor="middle" font-size="7.5" fill="#b91c1c">Conversions API</text>
+
+  <!-- Google -->
+  <rect x="118" y="350" width="80" height="36" rx="6" fill="#e8f5e9" stroke="#86efac" stroke-width="1.2"/>
+  <text x="158" y="365" text-anchor="middle" font-size="9" font-weight="700" fill="#166534">Google</text>
+  <text x="158" y="378" text-anchor="middle" font-size="7.5" fill="#15803d">Analytics / Ads</text>
+
+  <!-- TikTok -->
+  <rect x="218" y="350" width="80" height="36" rx="6" fill="#f0f0f0" stroke="#d1d5db" stroke-width="1.2"/>
+  <text x="258" y="365" text-anchor="middle" font-size="9" font-weight="700" fill="#333">TikTok</text>
+  <text x="258" y="378" text-anchor="middle" font-size="7.5" fill="#555">Events API</text>
+
+  <!-- Others -->
+  <rect x="318" y="350" width="64" height="36" rx="6" fill="#f3f0ff" stroke="#c4b5fd" stroke-width="1.2"/>
+  <text x="350" y="362" text-anchor="middle" font-size="9" font-weight="700" fill="#5b21b6">+8</text>
+  <text x="350" y="373" text-anchor="middle" font-size="7.5" fill="#6d28d9">LinkedIn,</text>
+  <text x="350" y="383" text-anchor="middle" font-size="7.5" fill="#6d28d9">Reddit…</text>
+
+
+</svg>
