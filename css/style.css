@@ -1083,17 +1083,68 @@ details.faq .faq-body p {
   margin-bottom: 0;
 }
 
-/* ─── Web section two-column layout ────────────────────────── */
-.web-layout {
+/* ─── Web evidence panels ───────────────────────────────────── */
+.evidence-grid {
   display: grid;
-  grid-template-columns: 1fr 200px;
-  gap: 2rem;
-  align-items: start;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
 }
-.web-figures {
+.evidence-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+}
+.evidence-card-header {
+  padding: 1.1rem 1.2rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+.evidence-card-header .platform-name {
+  margin-bottom: 0.4rem;
+}
+.evidence-card-header .tracker-pills {
+  margin-top: 0.55rem;
+}
+.card-media {
+  flex: 1;
+  background: #f8f8f8;
+}
+.card-media .figure-img-wrap {
+  border: none;
+  border-radius: 0;
+  background: #f8f8f8;
+}
+.card-media-caption {
+  padding: 0.55rem 0.9rem 0.7rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+  background: #fff;
+  border-top: 1px solid var(--border);
+}
+.card-media--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+.evidence-subheading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.5rem;
+}
+@media (max-width: 700px) {
+  .evidence-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .research-figure--small {
   margin: 0;
