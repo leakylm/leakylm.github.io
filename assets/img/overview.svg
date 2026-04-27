@@ -1,4 +1,4 @@
-<svg width="400" height="410" viewBox="0 0 400 410" xmlns="http://www.w3.org/2000/svg" font-family="'Source Sans Pro', Helvetica, Arial, sans-serif">
+<svg width="400" height="410" viewBox="0 0 400 410" xmlns="http://www.w3.org/2000/svg" font-family="'Source Sans 3', 'Source Sans Pro', Helvetica, Arial, sans-serif">
 
   <defs>
     <marker id="arr-gray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
@@ -84,7 +84,7 @@
   <text x="28" y="316" font-size="7.5" fill="#c02a2a">URL + cookie</text>
   <text x="112" y="316" font-size="7.5" fill="#c02a2a">URL + title</text>
   <text x="256" y="316" font-size="7.5" fill="#c02a2a">email hash</text>
-  <text x="330" y="316" font-size="7.5" fill="#c02a2a">server-side</text>
+  <text x="330" y="316" font-size="7.5" fill="#c02a2a">sGTM</text>
 
   <!-- ═══ TRACKER DESTINATION BOXES ════════════════════════ -->
   <!-- Meta -->
@@ -103,10 +103,10 @@
   <text x="258" y="378" text-anchor="middle" font-size="7.5" fill="#555">Events API</text>
 
   <!-- Others -->
-  <rect x="318" y="350" width="64" height="36" rx="6" fill="#f3f0ff" stroke="#c4b5fd" stroke-width="1.2"/>
-  <text x="350" y="362" text-anchor="middle" font-size="9" font-weight="700" fill="#5b21b6">+8</text>
-  <text x="350" y="373" text-anchor="middle" font-size="7.5" fill="#6d28d9">LinkedIn,</text>
-  <text x="350" y="383" text-anchor="middle" font-size="7.5" fill="#6d28d9">Reddit…</text>
+  <rect x="306" y="350" width="76" height="36" rx="6" fill="#f3f0ff" stroke="#c4b5fd" stroke-width="1.2"/>
+  <text x="344" y="363" text-anchor="middle" font-size="9" font-weight="700" fill="#5b21b6">Server-side</text>
+  <text x="344" y="375" text-anchor="middle" font-size="7.5" fill="#6d28d9">Google Tag</text>
+  <text x="344" y="384" text-anchor="middle" font-size="7.5" fill="#6d28d9">Manager</text>
 
 
 </svg>
