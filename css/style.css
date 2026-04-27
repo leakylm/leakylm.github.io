@@ -1417,6 +1417,7 @@ footer {
     max-width: 360px;
   }
   .hero-stats {
+    width: 100%;
     grid-template-columns: repeat(2, 1fr);
   }
   .platform-grid {
