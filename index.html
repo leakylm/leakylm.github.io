@@ -530,12 +530,12 @@
                     <code class="inline-code">surface</code>, and <code class="inline-code">version</code>. Proxying
                     through a first-party domain means hostname-based ad blockers targeting
                     <code class="inline-code">api.segment.io</code> will not intercept this traffic. <br /><br />
-                    We observe that Claude forwards user events server-to-server from Anthropic's infrastructure to
-                    eleven trackers with conversion APIs: Facebook Conversions API, LinkedIn Conversions API, TikTok
+                    The Conversions API configuration loaded from <code class="inline-code">a-cdn.anthropic.com</code> indicates that user events are configured to be forwarded server-to-server from Anthropic's infrastructure to
+                    eleven trackers: Facebook Conversions API, LinkedIn Conversions API, TikTok
                     Conversions API, Reddit Conversions API, Google Enhanced Conversions, Amplitude, Iterable, HubSpot,
                     Pinterest Conversions API, Podscribe, and DCM Floodlight. As this forwarding occurs
                     server-to-server, it evades ad blockers. Each forwarded event carries two shared identifiers that
-                    enable ID bridging, so user activities on Claude may be linkable across advertising platforms to a
+                    could enable ID bridging, so user activities on Claude may be linkable across advertising platforms to a
                     single Amplitude session without the user's knowledge or consent. If these cookies are eventually
                     bridged with email hashes, it can facilitate user re-identification and de-anonymization. Only
                     triggered when users accept non-essential cookies.
@@ -710,8 +710,11 @@
                 <span class="pill pill-more">+8 server-side</span>
               </div>
             </div>
-            <div class="card-media card-media--placeholder">
-              <span>Evidence recording coming soon</span>
+            <div class="card-media">
+              <div class="figure-img-wrap" data-lightbox data-caption="<strong>Claude (Anthropic).</strong> Recording shows the Datadog leak of conversation metadata, the <code>_fbp</code> cookie set as a first-party cookie, and the Conversions API configuration being loaded from <code>a-cdn.anthropic.com</code> — indicating server-to-server forwarding to eleven trackers. As this occurs server-side, it evades ad blockers. See the disclosure section for client-side leaks (Meta Pixel, Intercom, Datadog).">
+                <img src="assets/gifs/claude.gif" alt="Claude Datadog leak, first-party _fbp cookie, and Conversions API config" loading="lazy" />
+              </div>
+              <p class="card-media-caption">Datadog leak, <code>_fbp</code> cookie set as first-party, and Conversions API config loaded.</p>
             </div>
           </div>
 
@@ -747,10 +750,10 @@
               </div>
             </div>
             <div class="card-media">
-              <div class="figure-img-wrap" data-lightbox data-caption="<strong>Grok (xAI).</strong> Conversation URL and page title transmitted to Google Analytics, DoubleClick, TikTok, and Meta Pixel on page load. The URL slug exposes the chat topic and is accessible from an incognito browser without authentication.">
-                <img src="assets/gifs/grok.gif" alt="Grok leaking conversation URL and title to Google, TikTok, and Meta" loading="lazy" />
+              <div class="figure-img-wrap" data-lightbox data-caption="<strong>Grok (xAI).</strong> Conversation URL and page title transmitted to Google Analytics, DoubleClick, TikTok, and Meta Pixel on page load. The same conversation link is then opened from an incognito browser without authentication — confirming the URL is publicly accessible once leaked.">
+                <img src="assets/gifs/grok.gif" alt="Grok leaking conversation URL to Google, TikTok, and Meta, plus link accessible from incognito browser" loading="lazy" />
               </div>
-              <p class="card-media-caption">Conversation URL and title transmitted to Google Analytics, DoubleClick, TikTok, and Meta Pixel on page load.</p>
+              <p class="card-media-caption">Conversation URL and title leaked to Google Analytics, TikTok, and Meta Pixel — and the link is publicly accessible from an incognito browser.</p>
             </div>
           </div>
 
