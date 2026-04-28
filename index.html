@@ -691,7 +691,7 @@
             </div>
             <div class="card-media">
               <div class="figure-img-wrap" data-lightbox data-caption="<strong>Perplexity.</strong> Conversation URL transmitted to Datadog — the URL slug exposes the chat topic.">
-                <img data-src="assets/gifs/perplexity.gif" alt="Perplexity leaking conversation URL to Datadog" loading="lazy" />
+                <video src="assets/gifs/perplexity.mp4" autoplay loop muted playsinline title="Perplexity leaking conversation URL to Datadog"></video>
               </div>
               <p class="card-media-caption">Conversation URL transmitted to Datadog; URL slug exposes the chat topic.</p>
             </div>
@@ -712,7 +712,7 @@
             </div>
             <div class="card-media">
               <div class="figure-img-wrap" data-lightbox data-caption="<strong>Claude (Anthropic).</strong> Recording shows the Datadog leak of conversation metadata, the <code>_fbp</code> cookie set as a first-party cookie, and the Conversions API configuration being loaded from <code>a-cdn.anthropic.com</code> — indicating server-to-server forwarding to eleven trackers. As this occurs server-side, it evades ad blockers. See the disclosure section for client-side leaks (Meta Pixel, Intercom, Datadog).">
-                <img data-src="assets/gifs/claude.gif" alt="Claude Datadog leak, first-party _fbp cookie, and Conversions API config" loading="lazy" />
+                <video src="assets/gifs/claude.mp4" autoplay loop muted playsinline title="Claude Datadog leak, first-party _fbp cookie, and Conversions API config"></video>
               </div>
               <p class="card-media-caption">Datadog leak, <code>_fbp</code> cookie set as first-party, and Conversions API config loaded.</p>
             </div>
@@ -730,7 +730,7 @@
             </div>
             <div class="card-media">
               <div class="figure-img-wrap" data-lightbox data-caption="<strong>ChatGPT.</strong> Conversation URL and page title transmitted to Google Analytics on page load. Captured during a session where the user asked about liver cancer symptoms.">
-                <img data-src="assets/gifs/chatgpt.gif" alt="ChatGPT leaking conversation URL and title to Google Analytics" loading="lazy" />
+                <video src="assets/gifs/chatgpt.mp4" autoplay loop muted playsinline title="ChatGPT leaking conversation URL and title to Google Analytics"></video>
               </div>
               <p class="card-media-caption">Conversation URL and page title transmitted to Google Analytics on page load.</p>
             </div>
@@ -751,7 +751,7 @@
             </div>
             <div class="card-media">
               <div class="figure-img-wrap" data-lightbox data-caption="<strong>Grok (xAI).</strong> Conversation URL and page title transmitted to Google Analytics, DoubleClick, TikTok, and Meta Pixel on page load. The same conversation link is then opened from an incognito browser without authentication — confirming the URL is publicly accessible once leaked.">
-                <img data-src="assets/gifs/grok.gif" alt="Grok leaking conversation URL to Google, TikTok, and Meta, plus link accessible from incognito browser" loading="lazy" />
+                <video src="assets/gifs/grok.mp4" autoplay loop muted playsinline title="Grok leaking conversation URL to Google, TikTok, and Meta, plus link accessible from incognito browser"></video>
               </div>
               <p class="card-media-caption">Conversation URL and title leaked to Google Analytics, TikTok, and Meta Pixel — and the link is publicly accessible from an incognito browser.</p>
             </div>
@@ -1311,6 +1311,7 @@
       <button class="lightbox-close" id="lightbox-close" aria-label="Close">✕</button>
       <div class="lightbox-inner">
         <img id="lightbox-img" src="" alt="" />
+        <video id="lightbox-video" src="" autoplay loop muted playsinline style="display:none;max-width:100%;max-height:80vh;border-radius:6px"></video>
         <p class="lightbox-caption" id="lightbox-caption"></p>
       </div>
     </div>

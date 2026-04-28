@@ -1,14 +1,24 @@
 /* ─── Lightbox ──────────────────────────────────────────────── */
 const lightbox = document.getElementById("lightbox");
 const lbImg = document.getElementById("lightbox-img");
+const lbVideo = document.getElementById("lightbox-video");
 const lbCaption = document.getElementById("lightbox-caption");
 
 document.querySelectorAll("[data-lightbox]").forEach((wrap) => {
   wrap.addEventListener("click", () => {
     const imgEl = wrap.querySelector("img");
-    lbImg.src = imgEl.src || imgEl.dataset.src || "";
-    lbImg.alt = wrap.querySelector("img").alt;
+    const videoEl = wrap.querySelector("video");
     lbCaption.innerHTML = wrap.dataset.caption || "";
+    if (videoEl) {
+      lbVideo.src = videoEl.src;
+      lbVideo.style.display = "block";
+      lbImg.style.display = "none";
+    } else if (imgEl) {
+      lbImg.src = imgEl.src || imgEl.dataset.src || "";
+      lbImg.alt = imgEl.alt;
+      lbImg.style.display = "block";
+      lbVideo.style.display = "none";
+    }
     lightbox.classList.add("open");
     document.body.style.overflow = "hidden";
   });
@@ -17,6 +27,7 @@ document.querySelectorAll("[data-lightbox]").forEach((wrap) => {
 function closeLightbox() {
   lightbox.classList.remove("open");
   document.body.style.overflow = "";
+  lbVideo.src = "";
 }
 
 document.getElementById("lightbox-close").addEventListener("click", closeLightbox);
@@ -113,16 +124,3 @@ document.querySelectorAll("#table-access tr.matrix-row").forEach((row) => {
   });
 });
 
-/* ─── GIF lazy-loader ───────────────────────────────────────── */
-const gifObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    const img = entry.target;
-    if (entry.isIntersecting && img.dataset.src) {
-      img.src = img.dataset.src;
-      img.classList.add("gif-loaded");
-      gifObserver.unobserve(img);
-    }
-  });
-}, { rootMargin: "200px 0px" });
-
-document.querySelectorAll("img[data-src$='.gif']").forEach((img) => gifObserver.observe(img));
