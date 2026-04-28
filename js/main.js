@@ -5,7 +5,8 @@ const lbCaption = document.getElementById("lightbox-caption");
 
 document.querySelectorAll("[data-lightbox]").forEach((wrap) => {
   wrap.addEventListener("click", () => {
-    lbImg.src = wrap.querySelector("img").src;
+    const imgEl = wrap.querySelector("img");
+    lbImg.src = imgEl.src || imgEl.dataset.src || "";
     lbImg.alt = wrap.querySelector("img").alt;
     lbCaption.innerHTML = wrap.dataset.caption || "";
     lightbox.classList.add("open");
@@ -111,3 +112,17 @@ document.querySelectorAll("#table-access tr.matrix-row").forEach((row) => {
     row.classList.toggle("row-open", !detail.hidden);
   });
 });
+
+/* ─── GIF lazy-loader ───────────────────────────────────────── */
+const gifObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    const img = entry.target;
+    if (entry.isIntersecting && img.dataset.src) {
+      img.src = img.dataset.src;
+      img.classList.add("gif-loaded");
+      gifObserver.unobserve(img);
+    }
+  });
+}, { rootMargin: "200px 0px" });
+
+document.querySelectorAll("img[data-src$='.gif']").forEach((img) => gifObserver.observe(img));
