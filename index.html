@@ -146,7 +146,9 @@
                 >permalinks</a
               >
               with weak access control, making them accessible by default to anyone knowing the URL. This potentially
-              allows the trackers to access user conversations and their content.
+              allows the trackers to access user conversations and their content. In Grok's case, shared conversations
+              also generate publicly accessible screenshot images of the conversation content, with verbatim message
+              text exposed in Open Graph metadata received by TikTok's tracker.
               <a href="#permalink-visibility" class="doc-link">Table 1</a> describes the default access control
               mechanisms across LLMs.
             </p>
@@ -655,6 +657,33 @@
                     The same payload carries both Meta's <code class="inline-code">fbp</code> and TikTok's
                     <code class="inline-code">ttp</code> cookies, enabling ID bridging between Facebook and TikTok under
                     a single user identity. Only occurs after accepting non-essential cookies.
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="matrix-row" data-detail="d13">
+                <td class="platform-col">xAI Grok</td>
+                <td>
+                  <span class="pill pill-unknown" style="background:#f0f0f0;color:#444;border:none">TikTok</span>
+                </td>
+                <td>Conversation screenshot image, verbatim message content (via <code class="inline-code">og:image</code> alt text)</td>
+                <td><span class="leak-tag leak-cookies">Non-essential cookies accepted</span></td>
+                <td class="row-chevron-cell"><span class="row-chevron">›</span></td>
+              </tr>
+              <tr class="detail-row" id="d13" hidden>
+                <td colspan="5">
+                  <div class="detail-row-body">
+                    When a Grok conversation is shared, the platform generates Open Graph and Twitter Card metadata for
+                    the share page. This includes <code class="inline-code">og:image</code> and
+                    <code class="inline-code">twitter:image</code> URLs pointing to a screenshot of the conversation,
+                    and <code class="inline-code">og:image:alt</code> /
+                    <code class="inline-code">twitter:image:alt</code> attributes containing verbatim message content.
+                    TikTok's pixel reads and transmits these values — exposing not just the conversation URL and topic,
+                    but actual message text. The screenshot URLs follow a predictable pattern
+                    (<code class="inline-code">grok.com/share/&lt;id&gt;/opengraph-image/&lt;id&gt;</code>) and are
+                    publicly accessible without authentication, meaning any party that receives the share URL could
+                    reconstruct and access the conversation screenshot. Applies to shared (public permalink)
+                    conversations only. Only occurs after accepting non-essential cookies.
                   </div>
                 </td>
               </tr>
