@@ -1502,13 +1502,26 @@ footer {
     grid-template-columns: 1fr;
   }
   .timeline::before {
-    left: 0;
+    left: 4px;
+  }
+  .tl-item {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    grid-template-areas: "dot date" "dot body";
   }
   .tl-date {
-    display: none;
+    grid-area: date;
+    min-width: unset;
+    text-align: left;
+    padding-right: 0;
+    padding-bottom: 0.2rem;
   }
   .tl-dot {
-    margin-left: 0;
+    grid-area: dot;
+    margin-right: 0;
+  }
+  .tl-body {
+    grid-area: body;
   }
   .footer-inner {
     flex-direction: column;
